@@ -5,7 +5,7 @@ use consul_rs_plus::Client;
 #[test]
 fn kv() {
     let c = Client::new("localhost", 8500);
-    let ok = c.kv_put("test-key", "test_value").unwrap();
+    let ok = c.kv_set("test-key", "test_value").unwrap();
     assert_eq!(ok, true);
     let pairs = c.kv_get("test-key").unwrap();
     let pair = &pairs[0];
