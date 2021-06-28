@@ -12,7 +12,7 @@ A plus consul client package for Rust, more functions for microservice.
 set in Cargo dependencies
 ```toml
 [dependencies]
-consul-rs-plus = "0.1.0"
+consul-rs-plus = "0.1.2"
 ```
 
 ## Usage
@@ -35,5 +35,29 @@ fn main() {
     assert_eq!(ok, true);
 }
 ```
+
+## Test
+the test case write in function code file or tests folder, all nromal operation test in lib.rs.
+```rust
+#[cfg(test)]
+mod tests {
+  use crate::Client;
+  use base64::Config;
+  use crate::config;
+
+  #[test]
+  fn test_kv_get() {
+    let host = config::CONFIG["consul_addr"];
+    let client = Client::new(host, 8500);
+    let my_keys = client.kv_get("my-key").unwrap();
+    for k in my_keys {
+      println!("k: {:?}", k);
+    }
+  }
+  
+}
+```
+
+
 
 
