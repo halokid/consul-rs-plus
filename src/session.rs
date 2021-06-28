@@ -40,7 +40,7 @@ impl Session {
   pub fn set(&self, c: &Client, s: &Session) -> String {
     let url = format!("http://{}:{}/v1/session/create", c.host, c.port);
     let payload = serde_json::to_string(s).unwrap();
-    println!("payload ------ {}", payload);
+    // println!("set session payload ------ {}", payload);
     let mut rsp = reqwest::Client::new()
       .put(&url)
       .body(payload)
@@ -49,7 +49,7 @@ impl Session {
     let mut body = String::new();
     // rsp.read_to_string(&mut body).map_err( |e| e.to_string());
     let session_set: SessionSet = rsp.json().unwrap();
-    println!("session_set ----------- {:?}", session_set);
+    // println!("session_set ----------- {:?}", session_set);
     session_set.ID
   }
 }
