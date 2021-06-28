@@ -4,7 +4,9 @@ version = "0.1.0"
 authors = ["halokid <r00txxyyzz@gmail.com>"]
 edition = "2018"
 description = "A plus consul client package for Rust, more functions for micro service."
-license = "Apache-2.0"
+documentation = "https://github.com/halokid/consul-rs-plus"
+repository = "https://github.com/halokid/consul-rs-plus"
+license = "MIT/Apache-2.0"
 
 [dependencies]
 serde = "1.0"

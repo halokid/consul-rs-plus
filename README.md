@@ -12,7 +12,7 @@ A plus consul client package for Rust, more functions for microservice.
 set in Cargo dependencies
 ```toml
 [dependencies]
-consul = "0.1.0"
+consul-rs-plus = "0.1.0"
 ```
 
 ## Usage
