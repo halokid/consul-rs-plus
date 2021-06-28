@@ -22,7 +22,7 @@ lazy_static! {
         config.insert("consul_port", "8500");
       },
       "test" => {
-        config.insert("consul_addr", "172.20.72.35");
+        config.insert("consul_addr", "localhost");
         config.insert("consul_port", "8500");
       },
       "prd" => {

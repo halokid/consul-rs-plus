@@ -39,6 +39,11 @@ impl Client {
     self.kv.set(self, key, v)
   }
 
+  pub fn kv_set_with_session<S: Into<String>>(&self, key: S, v: S, session: S)
+                          -> Result<bool, String> {
+    self.kv.set_with_session(self, key, v, session)
+  }
+
   pub fn kv_delete<S: Into<String>>(&self, key: S) -> Result<bool, String> {
     self.kv.delete(self, key)
   }
@@ -46,11 +51,11 @@ impl Client {
   pub fn session_set(&self, lock_delay: String, name: String, node: String,
                      behavior: String, ttl: String) -> String {
     let mut s = session::Session::new();
-    s.lock_delay = "15s".to_string();
-    s.name = "my-test-session".to_string();
+    s.lock_delay = lock_delay;
+    s.name = name;
     s.node = node;
-    s.behavior = "release".to_string();
-    s.ttl = "10m0s".to_string();
+    s.behavior = behavior;
+    s.ttl = ttl;
     self.session.set(self, &s)
   }
 }
@@ -75,10 +80,20 @@ mod tests {
   fn test_session_set() {
     let host = config::CONFIG["consul_addr"];
     let client = Client::new(host, 8500);
-    let se = client.session_set();
+    let se = client.session_set("15s".to_string(), "my-session".to_string(), "node1".to_string(), "release".to_string(), "10m0s".to_string());
   }
-}
 
+  #[test]
+  fn test_kv_set_with_session() {
+    let host = config::CONFIG["consul_addr"];
+    let client = Client::new(host, 8500);
+    let session = client.session_set("15s".to_string(), "my-session".to_string(), "node1".to_string(), "release".to_string(), "10m0s".to_string());
+
+    let res = client.kv_set_with_session("my-key", "my-val", session.as_str()).unwrap();
+    println!("res ------- {}", res);
+  }
+
+}
 
 
 

@@ -1,7 +1,7 @@
 use crate::Client;
 use std::io::Read;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Session {
   pub id:       String,
   pub name:     String,
@@ -13,6 +13,11 @@ pub struct Session {
   service_checks: Option<String>,
   create_index:   u32,
   modify_index:   u32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SessionSet {
+  ID:   String,
 }
 
 impl Session {
@@ -42,10 +47,10 @@ impl Session {
       .send()
       .map_err( |e| e.to_string() ).unwrap();
     let mut body = String::new();
-    rsp.read_to_string(&mut body).map_err( |e| e.to_string());
-    println!("body --------- {}", body);
-    body
-    // "".to_string()
+    // rsp.read_to_string(&mut body).map_err( |e| e.to_string());
+    let session_set: SessionSet = rsp.json().unwrap();
+    println!("session_set ----------- {:?}", session_set);
+    session_set.ID
   }
 }
 

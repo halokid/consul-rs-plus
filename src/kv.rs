@@ -55,6 +55,20 @@ impl KVPair {
     return Ok(body.as_str().contains("true"));
   }
 
+  pub fn set_with_session<S: Into<String>>(&self, c: &Client, key: S, v: S, session: S)
+                      -> Result<bool, String> {
+    let url = format!("http://{}:{}/v1/kv/{}?acquire={}", c.host, c.port,
+                              key.into(), session.into());
+    let mut rsp = reqwest::Client::new()
+      .put(&url)
+      .body(v.into())
+      .send()
+      .map_err( |e| e.to_string())?;
+    let mut body = String::new();
+    rsp.read_to_string(&mut body).map_err( |e| e.to_string() )?;
+    return Ok(body.as_str().contains("true"));
+  }
+
   pub fn delete<S: Into<String>>(&self, c: &Client, key: S) -> Result<bool, String> {
     let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, key.into());
     let mut rsp = reqwest::Client::new()
