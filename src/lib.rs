@@ -9,9 +9,14 @@ extern crate serde_json;
 pub mod kv;
 mod config;
 pub mod session;
+pub mod pkg;
 
 use self::kv::*;
 use std::io::Read;
+use crate::pkg::CustomError;
+
+// todo: global use varible here
+pub const PKGX: pkg::Pkg = pkg::Pkg::new(true);
 
 pub struct Client {
   host: String,
@@ -58,6 +63,10 @@ impl Client {
     s.ttl = ttl;
     self.session.set(self, &s)
   }
+
+  pub fn session_renew(&self, sid: &str) -> Result<(), CustomError> {
+    self.session.renew(self, sid)
+  }
 }
 
 #[cfg(test)]
@@ -65,6 +74,7 @@ mod tests {
   use crate::Client;
   use base64::Config;
   use crate::config;
+  use crate::pkg::CustomError;
 
   #[test]
   fn test_kv_get() {
@@ -93,6 +103,16 @@ mod tests {
     println!("res ------- {}", res);
   }
 
+  #[test]
+  fn test_session_renew() {
+    let host = config::CONFIG["consul_addr"];
+    let client = Client::new(host, 8500);
+    let ok = client.session_renew("d5663534-82f9-429b-954c-ae63d59d3502");
+    match ok {
+      Ok(_) => { println!("---ok---");}
+      Err(_) => { println!("---err---");}
+    }
+  }
 }
 
 

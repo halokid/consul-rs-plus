@@ -1,5 +1,7 @@
-use crate::Client;
+use crate::{Client, PKGX};
 use std::io::Read;
+use std::fmt::Error;
+use crate::pkg::CustomError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Session {
@@ -52,8 +54,24 @@ impl Session {
     // println!("session_set ----------- {:?}", session_set);
     session_set.ID
   }
-}
 
+  pub fn renew(&self, c: &Client, sid: &str) -> Result<(), CustomError> {
+    let url = format!("http://{}:{}/v1/session/renew/{}", c.host, c.port, sid);
+    let mut rsp = reqwest::Client::new()
+      .put(&url)
+      .send()
+      .map_err( |e| e.to_string() ).unwrap();
+    let mut body = String::new();
+    rsp.read_to_string(&mut body).map_err( |e| e.to_string());
+    // println!("session renew: {:?}", body);
+    PKGX.debug_print(format!("session renew: {:?}", body).as_str());
+    if rsp.status().is_success() {
+      Ok(())
+    } else {
+      Err(CustomError(format!("renew session err: {}", sid)))
+    }
+  }
+}
 
 
 
