@@ -57,10 +57,17 @@ impl Client {
                      behavior: String, ttl: String) -> String {
     let mut s = session::Session::new();
     s.lock_delay = lock_delay;
-    s.name = name;
-    s.node = node;
+    if name != "".to_string() {
+      s.name = name;
+    }
+
+    if node != "".to_string() {
+      let nodex = Some(node);
+      s.node = nodex;
+    }
     s.behavior = behavior;
     s.ttl = ttl;
+    PKGX.debug_print(format!("lib session set: {:?}", s).as_str());
     self.session.set(self, &s)
   }
 

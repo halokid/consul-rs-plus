@@ -7,7 +7,7 @@ use crate::pkg::CustomError;
 pub struct Session {
   pub id:       String,
   pub name:     String,
-  pub node:     String,
+  pub node:     Option<String>,
   pub lock_delay: String,
   pub behavior:  String,
   pub ttl:      String,
@@ -28,7 +28,7 @@ impl Session {
     Session {
       id: "".to_string(),
       name: "".to_string(),
-      node: "".to_string(),
+      node: None,
       lock_delay: "".to_string(),
       behavior: "".to_string(),
       ttl: "".to_string(),
@@ -42,7 +42,7 @@ impl Session {
   pub fn set(&self, c: &Client, s: &Session) -> String {
     let url = format!("http://{}:{}/v1/session/create", c.host, c.port);
     let payload = serde_json::to_string(s).unwrap();
-    // println!("set session payload ------ {}", payload);
+    PKGX.debug_print(format!("set session payload ------ {}", payload).as_str());
     let mut rsp = reqwest::Client::new()
       .put(&url)
       .body(payload)
@@ -50,8 +50,9 @@ impl Session {
       .map_err( |e| e.to_string() ).unwrap();
     let mut body = String::new();
     // rsp.read_to_string(&mut body).map_err( |e| e.to_string());
+    // PKGX.debug_print(format!("session set: {:?}", body).as_str());
     let session_set: SessionSet = rsp.json().unwrap();
-    // println!("session_set ----------- {:?}", session_set);
+    PKGX.debug_print(format!("session set: {:?}", session_set).as_str());
     session_set.ID
   }
 
@@ -63,8 +64,7 @@ impl Session {
       .map_err( |e| e.to_string() ).unwrap();
     let mut body = String::new();
     rsp.read_to_string(&mut body).map_err( |e| e.to_string());
-    // println!("session renew: {:?}", body);
-    PKGX.debug_print(format!("session renew: {:?}", body).as_str());
+    PKGX.debug_print(format!("session renew: {:?}", body).as_str(), );
     if rsp.status().is_success() {
       Ok(())
     } else {
