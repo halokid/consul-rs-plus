@@ -61,14 +61,7 @@ impl KVPair {
     let url = format!("http://{}:{}/v1/kv/{}?acquire={}", c.host, c.port,
                       key.into(), session.into());
     let mut vx = v.into();
-    let vxx = vx.clone();   //  todo: 这里定义 vxx 是不会错误的
-    let xx = &vxx.to_string();
-    let yy = vxx.as_str().to_string();
-
-    let zz = &vxx;
-    let kk = vxx.as_str();
-
-    // todo: 要注意上面几种类型的变化， 简单来说消除 value borrowed here after move 这种错误， 一般都是用引用
+    let vxx = vx.clone();
 
     let mut rsp = reqwest::Client::new()
       .put(&url)
@@ -81,28 +74,25 @@ impl KVPair {
     PKGX.debug_print(format!("set_with_session debug: {:?}", body).as_str());
     // return Ok(body.as_str().contains("true"));
     if !body.as_str().contains("true") {
-      // let vx = v.borrow();
       let mut loop_flag = true;
-      while loop_flag {
-        // let x = &vx.to_string();
-        // let vxx = xv.into();
-        // let vxx = vx.clone();   // todo: 错误 value borrowed here after move 的问题是出现在这里， 因为 while循环的时候， 要每一个执行了 rsp 的封装都会转移 vxx 的所有权
+      let mut loop_num = 0;
+      while loop_flag && loop_num < 10 {
+        PKGX.debug_print("---loop_flag set_with_session---");
         let mut rsp = reqwest::Client::new()
           .put(&url)
-          // .body("xxxx")
-          // .body(&vxx.to_string()) // todo: 这样会出错 the trait `From<&std::string::String>` is not implemented for `reqwest::Body`
+          // todo: loop will get varible own, so use ref
           .body(vxx.as_str().to_string())
-          // .body(vxx.clone())
           .send()
           .map_err(|e| e.to_string())?;
         let mut body = String::new();
         rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
         PKGX.debug_print(format!("set_with_session loop debug: {:?}", body).as_str());
-        thread::sleep(time::Duration::from_secs(2));
+        thread::sleep(time::Duration::from_secs(1));
 
         if body.as_str().contains("true") {
           loop_flag = false
         }
+        loop_num += 1;
       }
     }
     Ok(true)
