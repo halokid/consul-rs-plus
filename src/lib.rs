@@ -19,7 +19,7 @@ use crate::pkg::CustomError;
 // pub const PKGX: pkg::Pkg = pkg::Pkg::new(true);
 
 pub struct Client {
-  debug: bool,
+  pub debug: bool,
 
   host: String,
   port: u16,

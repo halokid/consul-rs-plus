@@ -21,7 +21,9 @@ extern crate consul_rs_plus;
 use consul_rs_plus::Client;
 
 fn main() {
-    let c = Client::new("localhost", 8500);
+    let mut c = Client::new("localhost", 8500);
+    // debug enable
+    c.debug = true;
 
     let ok = c.kv_set("test-key", "test_value").unwrap();
     assert_eq!(ok, true);
