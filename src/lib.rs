@@ -16,9 +16,11 @@ use std::io::Read;
 use crate::pkg::CustomError;
 
 // todo: global use varible here
-pub const PKGX: pkg::Pkg = pkg::Pkg::new(true);
+// pub const PKGX: pkg::Pkg = pkg::Pkg::new(true);
 
 pub struct Client {
+  debug: bool,
+
   host: String,
   port: u16,
 
@@ -29,10 +31,17 @@ pub struct Client {
 impl Client {
   pub fn new<S: Into<String>>(host: S, port: u16) -> Client {
     Client {
+      debug: false,
       host: host.into(),
       port: port,
       kv: KVPair::new(),
       session: session::Session::new(),
+    }
+  }
+
+  pub fn debug_print(&self, s: &str) {
+    if self.debug {
+      println!("[DEBUG] --- {:?}", s);
     }
   }
 
@@ -67,7 +76,7 @@ impl Client {
     }
     s.behavior = behavior;
     s.ttl = ttl;
-    PKGX.debug_print(format!("lib session set: {:?}", s).as_str());
+    self.debug_print(format!("lib session set: {:?}", s).as_str());
     self.session.set(self, &s)
   }
 

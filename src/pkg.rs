@@ -21,10 +21,10 @@ impl Pkg {
     }
   }
 
-  pub fn debug_print(&self, s: &str) {
-    if self.debug {
-      println!("[DEBUG] --- {:?}", s);
-    }
-  }
+  // pub fn debug_print(&self, s: &str) {
+  //   if self.debug {
+  //     println!("[DEBUG] --- {:?}", s);
+  //   }
+  // }
 }
 

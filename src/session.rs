@@ -1,4 +1,4 @@
-use crate::{Client, PKGX};
+use crate::{Client};
 use std::io::Read;
 use std::fmt::Error;
 use crate::pkg::CustomError;
@@ -42,7 +42,7 @@ impl Session {
   pub fn set(&self, c: &Client, s: &Session) -> String {
     let url = format!("http://{}:{}/v1/session/create", c.host, c.port);
     let payload = serde_json::to_string(s).unwrap();
-    PKGX.debug_print(format!("set session payload ------ {}", payload).as_str());
+    c.debug_print(format!("set session payload ------ {}", payload).as_str());
     let mut rsp = reqwest::Client::new()
       .put(&url)
       .body(payload)
@@ -50,9 +50,9 @@ impl Session {
       .map_err( |e| e.to_string() ).unwrap();
     let mut body = String::new();
     // rsp.read_to_string(&mut body).map_err( |e| e.to_string());
-    // PKGX.debug_print(format!("session set: {:?}", body).as_str());
+    // c.debug_print(format!("session set: {:?}", body).as_str());
     let session_set: SessionSet = rsp.json().unwrap();
-    PKGX.debug_print(format!("session set: {:?}", session_set).as_str());
+    c.debug_print(format!("session set: {:?}", session_set).as_str());
     session_set.ID
   }
 
@@ -64,7 +64,7 @@ impl Session {
       .map_err( |e| e.to_string() ).unwrap();
     let mut body = String::new();
     rsp.read_to_string(&mut body).map_err( |e| e.to_string());
-    PKGX.debug_print(format!("session renew: {:?}", body).as_str(), );
+    c.debug_print(format!("session renew: {:?}", body).as_str(), );
     if rsp.status().is_success() {
       Ok(())
     } else {

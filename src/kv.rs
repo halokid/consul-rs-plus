@@ -1,4 +1,4 @@
-use crate::{Client, PKGX};
+use crate::{Client};
 use std::io::Read;
 use std::{thread, time};
 use std::borrow::Borrow;
@@ -71,13 +71,13 @@ impl KVPair {
       .map_err(|e| e.to_string())?;
     let mut body = String::new();
     rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
-    PKGX.debug_print(format!("set_with_session debug: {:?}", body).as_str());
+    c.debug_print(format!("set_with_session debug: {:?}", body).as_str());
     // return Ok(body.as_str().contains("true"));
     if !body.as_str().contains("true") {
       let mut loop_flag = true;
       let mut loop_num = 0;
       while loop_flag && loop_num < 10 {
-        PKGX.debug_print("---loop_flag set_with_session---");
+        c.debug_print("---loop_flag set_with_session---");
         let mut rsp = reqwest::Client::new()
           .put(&url)
           // todo: loop will get varible own, so use ref
@@ -86,7 +86,7 @@ impl KVPair {
           .map_err(|e| e.to_string())?;
         let mut body = String::new();
         rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
-        PKGX.debug_print(format!("set_with_session loop debug: {:?}", body).as_str());
+        c.debug_print(format!("set_with_session loop debug: {:?}", body).as_str());
         thread::sleep(time::Duration::from_secs(1));
 
         if body.as_str().contains("true") {
