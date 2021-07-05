@@ -93,6 +93,7 @@ impl KVPair {
           loop_flag = false
         }
         loop_num += 1;
+        thread::sleep(time::Duration::from_secs(3))
       }
     }
     Ok(true)
