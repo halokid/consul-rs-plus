@@ -87,13 +87,12 @@ impl KVPair {
         let mut body = String::new();
         rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
         c.debug_print(format!("set_with_session loop debug: {:?}", body).as_str());
-        thread::sleep(time::Duration::from_secs(1));
-
+        // thread::sleep(time::Duration::from_secs(1));
         if body.as_str().contains("true") {
           loop_flag = false
         }
         loop_num += 1;
-        thread::sleep(time::Duration::from_secs(3))
+        thread::sleep(time::Duration::from_secs(19))
       }
     }
     Ok(true)
