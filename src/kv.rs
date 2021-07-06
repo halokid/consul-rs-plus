@@ -89,11 +89,13 @@ impl KVPair {
         c.debug_print(format!("set_with_session loop debug: {:?}", body).as_str());
         // thread::sleep(time::Duration::from_secs(1));
         if body.as_str().contains("true") {
-          loop_flag = false
+          loop_flag = false;
+          return Ok(true);
         }
         loop_num += 1;
         thread::sleep(time::Duration::from_secs(19))
       }
+      return Ok(false);
     }
     Ok(true)
   }
