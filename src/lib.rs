@@ -78,7 +78,7 @@ impl Client {
   pub fn session_set(&self, lock_delay: String, name: String, node: String,
                      behavior: String, ttl: String) -> String {
     let mut s = session::Session::new();
-    s.lock_delay = lock_delay;
+    s.LockDelay = "0.001s".to_string();
     if name != "".to_string() {
       s.name = name;
     }
@@ -87,8 +87,8 @@ impl Client {
       let nodex = Some(node);
       s.node = nodex;
     }
-    s.behavior = behavior;
-    s.ttl = ttl;
+    s.Behavior = behavior;
+    s.TTL = ttl;
     self.debug_print(format!("lib session set: {:?}", s).as_str());
     self.session.set(self, &s)
   }

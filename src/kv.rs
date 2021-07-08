@@ -72,7 +72,8 @@ impl KVPair {
     let mut body = String::new();
     rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
     c.debug_print(format!("set_with_session debug: {:?}", body).as_str());
-    // return Ok(body.as_str().contains("true"));
+    return Ok(body.as_str().contains("true"));
+    /*
     if !body.as_str().contains("true") {
       let mut loop_flag = true;
       let mut loop_num = 0;
@@ -98,6 +99,7 @@ impl KVPair {
       return Ok(false);
     }
     Ok(true)
+     */
   }
 
   pub fn delete<S: Into<String>>(&self, c: &Client, key: S) -> Result<bool, String> {
