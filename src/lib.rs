@@ -14,6 +14,7 @@ pub mod pkg;
 use self::kv::*;
 use std::io::Read;
 use crate::pkg::CustomError;
+use base64::{decode};
 
 // todo: global use varible here
 // pub const PKGX: pkg::Pkg = pkg::Pkg::new(true);
@@ -45,8 +46,20 @@ impl Client {
     }
   }
 
-  pub fn kv_get<S: Into<String>>(&self, key: S) -> Result<Vec<KVPair>, String> {
-    self.kv.get(self, key)
+  pub fn kv_get<S: Into<String>>(&self, key: S) -> String {
+    let res = self.kv.get(self, key);
+    match res {
+      Ok(kvs) => {
+        let kv = kvs.get(0).unwrap();
+        let val = &kv.value;
+        let val_de = decode(val).unwrap();
+        let val_de_str = String::from_utf8(val_de).unwrap();
+        val_de_str
+      }
+      Err(err) => {
+        err
+      }
+    }
   }
 
   pub fn kv_set<S: Into<String>>(&self, key: S, v: S) -> Result<bool, String> {
@@ -91,6 +104,7 @@ mod tests {
   use base64::Config;
   use crate::config;
   use crate::pkg::CustomError;
+  use crate::kv::KVPair;
 
   #[test]
   fn test_kv_get() {
@@ -129,7 +143,25 @@ mod tests {
       Err(_) => { println!("---err---");}
     }
   }
+
+  #[test]
+  fn test_kv_getx() {
+    let host = config::CONFIG["consul_addr"];
+    let client = Client::new(host, 8500);
+    let res = client.kv_get("Echo");
+    match res {
+      Ok(kvs) => {
+        for kv in kvs {
+          println!("kv: {:?}", kv);
+        }
+      }
+      Err(err) => {
+        println!("err: {}", err);
+      }
+    }
+  }
 }
+
 
 
 
