@@ -62,7 +62,8 @@ impl KVPair {
     let url = format!("http://{}:{}/v1/kv/{}?acquire={}", c.host, c.port,
                       key.into(), session.into());
     let mut vx = v.into();
-    let vxx = vx.clone();
+    c.debug_print(format!("key set_with_session val: {:?}", vx).as_str(), );
+    // let vxx = vx.clone();
 
     let mut rsp = reqwest::Client::new()
       .put(&url)
