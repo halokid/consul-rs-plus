@@ -51,7 +51,7 @@ impl Client {
     match res {
       Ok(kvs) => {
         let kv = kvs.get(0).unwrap();
-        let val = &kv.value;
+        let val = &kv.Value;
         let val_de = decode(val).unwrap();
         let val_de_str = String::from_utf8(val_de).unwrap();
         val_de_str

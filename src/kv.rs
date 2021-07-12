@@ -7,14 +7,14 @@ use std::borrow::Borrow;
 #[derive(Debug, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct KVPair {
-  pub key: String,
-  pub create_index: u64,
-  pub modify_index: u64,
-  pub lock_index: u64,
-  pub flags: u64,
-  pub value: String,
+  pub Key: String,
+  pub CreateIndex: u64,
+  pub ModifyIndex: u64,
+  pub LockIndex: u64,
+  pub Flags: u64,
+  pub Value: String,
   #[serde(default = "default_string")]
-  pub session: String,
+  pub Session: String,
 }
 
 fn default_string() -> String {
@@ -24,13 +24,13 @@ fn default_string() -> String {
 impl KVPair {
   pub fn new() -> Self {
     KVPair {
-      key: "".to_string(),
-      create_index: 0,
-      modify_index: 0,
-      lock_index: 0,
-      flags: 0,
-      value: "".to_string(),
-      session: "".to_string(),
+      Key: "".to_string(),
+      CreateIndex: 0,
+      ModifyIndex: 0,
+      LockIndex: 0,
+      Flags: 0,
+      Value: "".to_string(),
+      Session: "".to_string(),
     }
   }
 
@@ -41,6 +41,7 @@ impl KVPair {
     let mut body = String::new();
     rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
     // todo: success -> return Vec<KVPair>,  fail -> return error string
+    c.debug_print(format!("kv get body --- {}", body).as_str());
     serde_json::from_str::<Vec<KVPair>>(&body).map_err(|e| e.to_string())
   }
 
@@ -127,7 +128,7 @@ impl KVPair {
     let kvx = kv.unwrap();
     c.debug_print(format!("kvx ------ {:?}", kvx).as_str());
     let kvx_unwp = kvx.get(0).unwrap();
-    let sid = &kvx_unwp.session;
+    let sid = &kvx_unwp.Session;
     c.debug_print(format!("delete_both_session sid: {}", sid).as_str());
     //del session
     c.session_delete(sid);
@@ -143,7 +144,7 @@ impl KVPair {
   }
 
   pub fn get_value(&self) -> Result<Vec<u8>, base64::DecodeError> {
-    base64::decode(&self.value)
+    base64::decode(&self.Value)
   }
 }
 
