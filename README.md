@@ -5,6 +5,7 @@ A plus consul client package for Rust, more functions for microservice.
 
 - [x] key/value operation
 - [x] session operation
+- [x] key/value & session combination operation
 - [ ] watch keys tree change function(usual use in microservice)
 
 
