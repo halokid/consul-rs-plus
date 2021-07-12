@@ -42,7 +42,7 @@ impl Session {
   pub fn set(&self, c: &Client, s: &Session) -> String {
     let url = format!("http://{}:{}/v1/session/create", c.host, c.port);
     let payload = serde_json::to_string(s).unwrap();
-    c.debug_print(format!("set session payload ------ {}", payload).as_str());
+    c.debug_print(format!("set session payload ------ {}", payload).as_str(), );
     let mut rsp = reqwest::Client::new()
       .put(&url)
       .body(payload)
@@ -52,7 +52,7 @@ impl Session {
     // rsp.read_to_string(&mut body).map_err( |e| e.to_string());
     // c.debug_print(format!("session set: {:?}", body).as_str());
     let session_set: SessionSet = rsp.json().unwrap();
-    c.debug_print(format!("session set: {:?}", session_set).as_str());
+    c.debug_print(format!("session set: {:?}", session_set).as_str(), );
     session_set.ID
   }
 
@@ -70,6 +70,18 @@ impl Session {
     } else {
       Err(CustomError(format!("renew session err: {}", sid)))
     }
+  }
+
+  pub fn delete(&self, c: &Client, sid: &str) -> String {
+    let url = format!("http://{}:{}/v1/session/destroy/{}", c.host, c.port, sid);
+    let mut rsp = reqwest::Client::new()
+      .put(&url)
+      .send()
+      .map_err( |e| e.to_string()).unwrap();
+    let mut body = String::new();
+    rsp.read_to_string(&mut body).map_err( |e| e.to_string() );
+    c.debug_print(format!("session delete return ---- {}", body).as_str());
+    body
   }
 }
 

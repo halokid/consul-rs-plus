@@ -75,6 +75,10 @@ impl Client {
     self.kv.delete(self, key)
   }
 
+  pub fn kv_delete_both_session<S: Into<String>>(&self, key: S) -> Result<bool, String> {
+    self.kv.delete_both_session(self, key)
+  }
+
   pub fn session_set(&self, lock_delay: String, name: String, node: String,
                      behavior: String, ttl: String) -> String {
     let mut s = session::Session::new();
@@ -89,12 +93,16 @@ impl Client {
     }
     s.Behavior = behavior;
     s.TTL = ttl;
-    self.debug_print(format!("lib session set: {:?}", s).as_str());
+    self.debug_print(format!("lib session set: {:?}", s).as_str(), );
     self.session.set(self, &s)
   }
 
   pub fn session_renew(&self, sid: &str) -> Result<(), CustomError> {
     self.session.renew(self, sid)
+  }
+
+  pub fn session_delete(&self, sid: &str) -> String {
+    self.session.delete(self, sid)
   }
 }
 
@@ -107,13 +115,19 @@ mod tests {
   use crate::kv::KVPair;
 
   #[test]
+  fn test_kv_delete_both_session() {
+    let host = config::CONFIG["consul_addr"];
+    let client = Client::new(host, 8500);
+    let res = client.kv_delete_both_session("my-key");
+    println!("res ---------- {}", res.unwrap());
+  }
+
+  #[test]
   fn test_kv_get() {
     let host = config::CONFIG["consul_addr"];
     let client = Client::new(host, 8500);
-    let my_keys = client.kv_get("my-key").unwrap();
-    for k in my_keys {
-      println!("k: {:?}", k);
-    }
+    let val = client.kv_get("my-key");
+    println!("val ----- {}", val);
   }
 
   #[test]
@@ -144,22 +158,6 @@ mod tests {
     }
   }
 
-  #[test]
-  fn test_kv_getx() {
-    let host = config::CONFIG["consul_addr"];
-    let client = Client::new(host, 8500);
-    let res = client.kv_get("Echo");
-    match res {
-      Ok(kvs) => {
-        for kv in kvs {
-          println!("kv: {:?}", kv);
-        }
-      }
-      Err(err) => {
-        println!("err: {}", err);
-      }
-    }
-  }
 }
 
 

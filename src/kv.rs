@@ -71,7 +71,7 @@ impl KVPair {
       .map_err(|e| e.to_string())?;
     let mut body = String::new();
     rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
-    c.debug_print(format!("set_with_session debug: {:?}", body).as_str());
+    c.debug_print(format!("set_with_session debug: {:?}", body).as_str(), );
     return Ok(body.as_str().contains("true"));
     /*
     if !body.as_str().contains("true") {
@@ -104,6 +104,34 @@ impl KVPair {
 
   pub fn delete<S: Into<String>>(&self, c: &Client, key: S) -> Result<bool, String> {
     let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, key.into());
+    let mut rsp = reqwest::Client::new()
+      .delete(&url)
+      .send()
+      .map_err(|e| e.to_string())?;
+    let mut body = String::new();
+    rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
+    return Ok(body.as_str().contains("true"));
+  }
+
+  pub fn delete_both_session<S: Into<String>>(&self, c: &Client, key: S) -> Result<bool, String> {
+    // get kv session
+    let keyx = key.into();
+    let keyx_ref = keyx.as_str();
+    let kv = self.get(c, keyx_ref.to_string());
+    match kv {
+      Err(err) => {
+        return Err(format!("can not get kv {} {}", keyx_ref.to_string(), err));
+      }
+      _ => {}
+    }
+    let kvx = kv.unwrap();
+    let kvx_unwp = kvx.get(0).unwrap();
+    let sid = &kvx_unwp.session;
+    c.debug_print(format!("delete_both_session sid: {}", sid).as_str());
+    //del session
+    c.session_delete(sid);
+
+    let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, keyx_ref.to_string());
     let mut rsp = reqwest::Client::new()
       .delete(&url)
       .send()
