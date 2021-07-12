@@ -125,6 +125,7 @@ impl KVPair {
       _ => {}
     }
     let kvx = kv.unwrap();
+    c.debug_print(format!("kvx ------ {:?}", kvx).as_str());
     let kvx_unwp = kvx.get(0).unwrap();
     let sid = &kvx_unwp.session;
     c.debug_print(format!("delete_both_session sid: {}", sid).as_str());
