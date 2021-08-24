@@ -62,6 +62,12 @@ impl Client {
     }
   }
 
+  pub fn kv_get_folder<S: Into<String>>(&self, folder: S) -> Result<Vec<String>,
+    String> {
+    let folder_keys = self.kv.get_folder_keys(self, folder).unwrap();
+    serde_json::from_str::<Vec<String>>(&folder_keys).map_err(|e| e.to_string())
+  }
+
   pub fn kv_set<S: Into<String>>(&self, key: S, v: S) -> Result<bool, String> {
     self.kv.set(self, key, v)
   }
@@ -156,6 +162,15 @@ mod tests {
       Ok(_) => { println!("---ok---");}
       Err(_) => { println!("---err---");}
     }
+  }
+
+  #[test]
+  fn test_kv_ge_folder() {
+    let host = config::CONFIG["consul_addr"];
+    let client = Client::new(host, 8500);
+    let res = client.kv_get_folder("pomid/Echo");
+    let svcs = res.unwrap();
+    println!("svcs ------------- {:?}", svcs);
   }
 
 }
