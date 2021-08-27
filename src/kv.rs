@@ -2,6 +2,7 @@ use crate::{Client};
 use std::io::Read;
 use std::{thread, time};
 use std::borrow::Borrow;
+use crate::pkg::CustomError;
 
 #[derive(Serialize, Deserialize)]
 #[derive(Debug, Eq, PartialEq)]
@@ -43,6 +44,15 @@ impl KVPair {
     // todo: success -> return Vec<KVPair>,  fail -> return error string
     c.debug_print(format!("kv get body --- {}", body).as_str());
     serde_json::from_str::<Vec<KVPair>>(&body).map_err(|e| e.to_string())
+  }
+
+  pub fn get_folder_keys<S: Into<String>>(&self, c: &Client, key: S) -> Result<String,
+                String> {
+    let url = format!("http://{}:{}/v1/kv/{}/?keys", c.host, c.port, key.into());
+    let mut rsp = reqwest::get(&url).map_err(|e| e.to_string())?;
+    let mut body = String::new();
+    rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
+    Ok(body)
   }
 
   pub fn set<S: Into<String>>(&self, c: &Client, key: S, v: S) -> Result<bool, String> {
@@ -166,7 +176,7 @@ mod tests {
             "ModifyIndex":495627
         }]"#;
     let v: Vec<super::KVPair> = serde_json::from_str(dat).unwrap();
-    assert_eq!(v[0].lock_index, 666);
+    assert_eq!(v[0].LockIndex, 666);
     assert_eq!(v[0].get_value().unwrap(), "true".as_bytes().to_owned())
   }
 
