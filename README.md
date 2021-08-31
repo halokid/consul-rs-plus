@@ -6,6 +6,7 @@ A plus consul client package for Rust, more functions for microservice.
 - [x] key/value operation
 - [x] session operation
 - [x] key/value & session combination operation
+- [x] key/value folder values(for micro service nodes info)
 - [ ] watch keys tree change function(usual use in microservice)
 
 
@@ -13,7 +14,7 @@ A plus consul client package for Rust, more functions for microservice.
 set in Cargo dependencies
 ```toml
 [dependencies]
-consul-rs-plus = "0.1.5"
+consul-rs-plus = "0.1.6"
 ```
 
 ## Usage
