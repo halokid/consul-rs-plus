@@ -85,6 +85,12 @@ impl Client {
     self.kv.delete_both_session(self, key)
   }
 
+  pub fn kv_folder_watch<S: Into<String>>(&self, folder: S) -> Result<bool, String> {
+    self.kv.watch_tree(self, folder);
+
+    Ok(true)
+  }
+
   pub fn session_set(&self, lock_delay: String, name: String, node: String,
                      behavior: String, ttl: String) -> String {
     let mut s = session::Session::new();
@@ -110,6 +116,7 @@ impl Client {
   pub fn session_delete(&self, sid: &str) -> String {
     self.session.delete(self, sid)
   }
+
 }
 
 #[cfg(test)]
@@ -119,6 +126,14 @@ mod tests {
   use crate::config;
   use crate::pkg::CustomError;
   use crate::kv::KVPair;
+
+  #[test]
+  fn test_kv_folder_watch() {
+    env_logger::init();
+    let host = config::CONFIG["consul_addr"];
+    let client = Client::new(host, 8500);
+    let res = client.kv_folder_watch("foo");
+  }
 
   #[test]
   fn test_kv_delete_both_session() {
