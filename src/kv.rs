@@ -162,20 +162,30 @@ impl KVPair {
     base64::decode(&self.Value)
   }
 
-  pub fn watch_tree<S: Into<String>>(&self, c: &Client, folder: S) -> Result<bool, String> {
+  pub async fn watch_tree<S: Into<String>>(&self, c: &Client, folder: S) -> Result<bool, String> {
     let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, folder.into());
     let mut rsp = reqwest::get(&url).map_err(|e| e.to_string())?;
     let header = rsp.headers();
     log::info!("header ----- {:?}, {:?}", header, header.get("x-consul-index").unwrap());
     let origin_index = header.get("x-consul-index").unwrap();
     let (index_check, mut rx) = mpsc::channel(1);
+
+    // let host = &c.host;
+    // let port = &c.port;
     tokio::task::spawn(async move {
+      let url = format!("http://xx:xx/v1/kv/foo");
       sleep(Duration::from_secs(3));
-      index_check.send("xx");
+      let mut rspx = reqwest::get(&url).map_err(|e| e.to_string()).unwrap();
+      let header = rspx.headers();
+      log::info!("header in spawn ----- {:?}, {:?}", header, header.get("x-consul-index").unwrap());
+      let check_index = header.get("x-consul-index").unwrap();
+      // let check_index = "xx";
+      index_check.send(check_index).await.unwrap();
       log::info!("=== watch tree spawn ===");
     });
-    while let Some(check) = rx.recv().await {
-      log::info!("check --- {}", check)
+
+    while let Some(check_index) = rx.recv().await {
+      log::info!("check --- {:?}", check_index);
     }
 
     sleep(Duration::from_secs(30));
