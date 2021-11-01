@@ -85,8 +85,8 @@ impl Client {
     self.kv.delete_both_session(self, key)
   }
 
-  pub fn kv_folder_watch<S: Into<String>>(&self, folder: S) -> Result<bool, String> {
-    self.kv.watch_tree(self, folder);
+  pub async fn kv_folder_watch<S: Into<String>>(&self, folder: S) -> Result<bool, String> {
+    let res = self.kv.watch_tree(self, folder).await;
 
     Ok(true)
   }
@@ -123,16 +123,44 @@ impl Client {
 mod tests {
   use crate::Client;
   use base64::Config;
+  use tokio::sync::mpsc;
   use crate::config;
   use crate::pkg::CustomError;
   use crate::kv::KVPair;
 
-  #[test]
-  fn test_kv_folder_watch() {
+  // #[test]
+  #[tokio::test]
+  async fn test_kv_folder_watch() {
     env_logger::init();
+    for i in 0..3 {
+      log::info!("i --- {:?}", i);
+    }
+    log::info!("log输出");
     let host = config::CONFIG["consul_addr"];
     let client = Client::new(host, 8500);
-    let res = client.kv_folder_watch("foo");
+    let res = client.kv_folder_watch("foo").await;
+  }
+
+  #[tokio::test]
+  async fn test_kv_folder_watch_getnodes() {
+    env_logger::init();
+    for i in 0..3 {
+      log::info!("i --- {:?}", i);
+    }
+    log::info!("log输出");
+    let host = config::CONFIG["consul_addr"];
+    let client = Client::new(host, 8500);
+    let mut res = false;
+    let (sx, mut rx) = mpsc::channel(1);
+
+    tokio::task::spawn({
+      let resx = client.kv_folder_watch("foo").await.unwrap();
+      sx.send(resx).await.unwrap();
+    })
+
+    while let Some(resx) = rx.recv().await {
+      log::info!("resx --- {:?}", resx);
+    }
   }
 
   #[test]
