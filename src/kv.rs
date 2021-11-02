@@ -163,7 +163,7 @@ impl KVPair {
     base64::decode(&self.Value)
   }
 
-  /*
+  // /*
   pub async fn watch_tree<S: Into<String>>(&self, c: &Client, folder: S,
               mut svc_nodes: HashMap<String, Vec<String>>) -> Result<bool, String> {
     log::info!("watch_tree log输出 1");
@@ -201,13 +201,44 @@ impl KVPair {
     sleep(Duration::from_secs(30));
     Ok(true)
   }
-   */
+   // */
+
+  fn get_folder_index(&self, c: &Client, folder: String) -> String {
+    let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, folder);
+    let mut rspx = reqwest::get(&url).map_err(|e| e.to_string()).unwrap();
+    let header = rspx.headers();
+    let index = header.get("x-consul-index").unwrap();
+    let index_s = index.to_str().unwrap().to_string();
+    index_s
+  }
+
+  // if you use cakeRabbit micro-service frmework, it use folder for service nodes
+  // you can get all the service nodes use this fn, the consul API: /v1/kv/folder?keys
+  fn get_folder_allkeys(&self, c: &Client, folder: String) -> Vec<u8> {
+    let url = format!("http://{}:{}/v1/kv/{}?keys", c.host, c.port, folder);
+    let mut rspx = reqwest::get(&url).map_err(|e| e.to_string()).unwrap();
+    let mut body = String::new();
+    rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
+    // todo: success -> return Vec<KVPair>,  fail -> return error string
+    c.debug_print(format!("get_folder_allkeys body --- {}", body).as_str());
+    let nodes_v = serde_json::to_vec(&body);
+    nodes_v.unwrap()
+  }
 }
 
 
 #[cfg(test)]
 mod tests {
   use crate::Client;
+  use crate::kv::KVPair;
+
+  #[test]
+  fn test_get_folder_allkeys() {
+    let kv = KVPair::new();
+    let client = Client::new("consu_test", 8500);
+    let nodes_v = kv.get_folder_allkeys(&client, "pomid".to_string());
+    println!("node_v -------- {:?}", nodes_v);
+  }
 
   #[test]
   fn unmarshal_kv_pair() {
