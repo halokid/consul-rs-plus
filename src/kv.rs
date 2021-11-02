@@ -163,6 +163,7 @@ impl KVPair {
     base64::decode(&self.Value)
   }
 
+  /*
   pub async fn watch_tree<S: Into<String>>(&self, c: &Client, folder: S,
               mut svc_nodes: HashMap<String, Vec<String>>) -> Result<bool, String> {
     log::info!("watch_tree log输出 1");
@@ -200,6 +201,7 @@ impl KVPair {
     sleep(Duration::from_secs(30));
     Ok(true)
   }
+   */
 }
 
 

@@ -85,11 +85,13 @@ impl Client {
     self.kv.delete_both_session(self, key)
   }
 
+  /*
   pub async fn kv_folder_watch<S: Into<String>>(&self, folder: S) -> Result<bool, String> {
     let res = self.kv.watch_tree(self, folder).await;
 
     Ok(true)
   }
+   */
 
   pub fn session_set(&self, lock_delay: String, name: String, node: String,
                      behavior: String, ttl: String) -> String {
@@ -128,6 +130,7 @@ mod tests {
   use crate::pkg::CustomError;
   use crate::kv::KVPair;
 
+  /*
   // #[test]
   #[tokio::test]
   async fn test_kv_folder_watch() {
@@ -140,7 +143,9 @@ mod tests {
     let client = Client::new(host, 8500);
     let res = client.kv_folder_watch("foo").await;
   }
+   */
 
+  /*
   #[tokio::test]
   async fn test_kv_folder_watch_getnodes() {
     env_logger::init();
@@ -156,12 +161,13 @@ mod tests {
     tokio::task::spawn({
       let resx = client.kv_folder_watch("foo").await.unwrap();
       sx.send(resx).await.unwrap();
-    })
+    });
 
     while let Some(resx) = rx.recv().await {
       log::info!("resx --- {:?}", resx);
     }
   }
+   */
 
   #[test]
   fn test_kv_delete_both_session() {
