@@ -6,8 +6,10 @@ use std::collections::HashMap;
 use std::prelude::v1::Option::Some;
 use crate::pkg::CustomError;
 use tokio::sync::mpsc;
+// use std::sync::mpsc;
 use std::thread::sleep;
 use tokio::time::Duration;
+use std::str;
 
 #[derive(Serialize, Deserialize)]
 #[derive(Debug, Eq, PartialEq)]
@@ -163,7 +165,7 @@ impl KVPair {
     base64::decode(&self.Value)
   }
 
-  // /*
+  /*
   pub async fn watch_tree<S: Into<String>>(&self, c: &Client, folder: S,
               mut svc_nodes: HashMap<String, Vec<String>>) -> Result<bool, String> {
     log::info!("watch_tree log输出 1");
@@ -201,28 +203,29 @@ impl KVPair {
     sleep(Duration::from_secs(30));
     Ok(true)
   }
-   // */
+   */
 
-  fn get_folder_index(&self, c: &Client, folder: String) -> String {
-    let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, folder);
+  fn get_folder_index<S: Into<String>>(&self, c: &Client, folder: S) -> String {
+    let url = format!("http://{}:{}/v1/kv/{}/", c.host, c.port, folder.into());
     let mut rspx = reqwest::get(&url).map_err(|e| e.to_string()).unwrap();
     let header = rspx.headers();
-    let index = header.get("x-consul-index").unwrap();
+    let index = header.get("X-Consul-Index").unwrap();
     let index_s = index.to_str().unwrap().to_string();
     index_s
   }
 
   // if you use cakeRabbit micro-service frmework, it use folder for service nodes
   // you can get all the service nodes use this fn, the consul API: /v1/kv/folder?keys
-  fn get_folder_allkeys(&self, c: &Client, folder: String) -> Vec<u8> {
-    let url = format!("http://{}:{}/v1/kv/{}?keys", c.host, c.port, folder);
-    let mut rspx = reqwest::get(&url).map_err(|e| e.to_string()).unwrap();
+  fn get_folder_allkeys<S: Into<String>>(&self, c: &Client, folder: S) -> Vec<String> {
+    let url = format!("http://{}:{}/v1/kv/{}?keys", c.host, c.port, folder.into());
+    let mut rsp = reqwest::get(&url).map_err(|e| e.to_string()).unwrap();
     let mut body = String::new();
-    rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
+    rsp.read_to_string(&mut body).map_err(|e| e.to_string());
     // todo: success -> return Vec<KVPair>,  fail -> return error string
     c.debug_print(format!("get_folder_allkeys body --- {}", body).as_str());
-    let nodes_v = serde_json::to_vec(&body);
-    nodes_v.unwrap()
+    let nodes_v: Vec<String> = serde_json::from_str(&body).unwrap();
+    // println!("nodes_v ---------- {:?}", nodes_v);
+    nodes_v
   }
 }
 
@@ -231,14 +234,119 @@ impl KVPair {
 mod tests {
   use crate::Client;
   use crate::kv::KVPair;
+  use tokio::sync::mpsc as tmpsc;
+  use std::sync::mpsc as smpsc;
+  use std::{thread, time};
+  use log;
 
   #[test]
   fn test_get_folder_allkeys() {
     let kv = KVPair::new();
-    let client = Client::new("consu_test", 8500);
-    let nodes_v = kv.get_folder_allkeys(&client, "pomid".to_string());
+    let client = Client::new("consul_test", 8500);
+    let nodes_v = kv.get_folder_allkeys(&client, "mytest".to_string());
     println!("node_v -------- {:?}", nodes_v);
+    println!("node_v 0 -------- {:?}", &nodes_v[0..1]);
   }
+
+  #[test]
+  fn test_get_folder_index() {
+    let kv = KVPair::new();
+    let client = Client::new("consul_test", 8500);
+    let index = kv.get_folder_index(&client, "mytest".to_string());
+    println!("index ------ {}", index);
+  }
+
+  // todo: for micro service, service client should watch the service tree, load the services
+  // todo: cache, dont need to request the register center every call time.
+  // todo: this fn should be running in main thread. while get sx.send, then reload services cache.
+  #[tokio::test]
+  async fn test_watch_folder_tree_tmpsc() {
+    env_logger::init();
+    let folder = "mytest".to_string();
+    let mut nodes_service: Vec<String> = Vec::new();     // service cache
+    // todo: if the index change, send the new nodes services between coroutine
+    let (sx, mut rx) = tmpsc::channel(1);
+    // let (sx, mut rx) = smpsc::channel();
+    let kv = KVPair::new();
+    let client = Client::new("consul_test", 8500);
+    let mut index = kv.get_folder_index(&client, &folder);
+    log::info!("index orgin ------- {}", index);
+
+    tokio::task::spawn(async move {
+      for i in 0..90 {
+        thread::sleep(time::Duration::from_secs(5));
+        let mut index_ck = kv.get_folder_index(&client, &folder);
+        log::info!("index_ck ------- {}", index_ck);
+        if !index_ck.eq(index.as_str()) {
+          log::info!("=== get newest nodes service, send coroutine ===");
+          let nodes_v = kv.get_folder_allkeys(&client, &folder);
+          log::info!("in spawn nodes_v --- {:?}", nodes_v);
+          let nodes_v_cl = nodes_v.clone();
+          sx.send(nodes_v).await.unwrap();    // todo: just make the channel full!
+          sx.send(nodes_v_cl).await.unwrap();
+          index = index_ck;
+        } else {
+          log::info!("=== nodes_service no change ===");
+          // sx.send(vec![]).await.unwrap();
+        }
+      }
+    });
+
+    while let Some(nodes_v) = rx.recv().await {
+      nodes_service = nodes_v;
+      log::info!("reload nodes_service --- {:?}", nodes_service);
+      // return nodes_v;
+    }
+    // todo: will not run!!!
+    log::info!("nodes_service now is --- {:?}", nodes_service)
+    // return vec![];
+  }
+
+  #[tokio::test]
+  async fn test_watch_folder_tree_smpsc() {
+    env_logger::init();
+    let mut nodes_service: Vec<String> = Vec::new();     // service cache
+    // todo: if the index change, send the new nodes services between coroutine
+    let (sx, mut rx) = smpsc::channel();
+    let kv = KVPair::new();
+    let client = Client::new("consul_test", 8500);
+    let mut index = kv.get_folder_index(&client, "mytest".to_string());
+    log::info!("index orgin ------- {}", index);
+
+    tokio::task::spawn(async move {
+      for i in 0..90 {
+        thread::sleep(time::Duration::from_secs(5));
+        let mut index_ck = kv.get_folder_index(&client, "mytest".to_string());
+        log::info!("index_ck ------- {}", index_ck);
+        if !index_ck.eq(index.as_str()) {
+          log::info!("=== get newest nodes service, send coroutine ===");
+          let nodes_v = kv.get_folder_allkeys(&client, "mytest".to_string());
+          sx.send(nodes_v).unwrap();
+          index = index_ck;
+        } else {
+          log::info!("=== nodes_service no change ===");
+          // sx.send(vec![]).await.unwrap();
+        }
+      }
+    }).await;   // todo: this is await will loop run the tokio::spawn, so cannot run next process
+
+    // todo: will not run forever!!!!!
+    let nodes_v = rx.recv().unwrap();
+    nodes_service = nodes_v;
+    log::info!("reload nodes_service --- {:?}", nodes_service);
+    // return nodes_v;
+
+    // return vec![];
+  }
+
+  /*
+  #[tokio::test]
+  async fn test_get_newest_folder_tree() {
+    env_logger::init();
+    let nodes_v = test_watch_folder_tree().await;
+    log::info!("nodes_v ---------- {:?}", nodes_v);
+  }
+   */
 
   #[test]
   fn unmarshal_kv_pair() {
@@ -265,8 +373,5 @@ mod tests {
   //   }
   // }
 }
-
-
-
 
 
