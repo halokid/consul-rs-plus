@@ -235,9 +235,11 @@ mod tests {
   use crate::Client;
   use crate::kv::KVPair;
   use tokio::sync::mpsc as tmpsc;
+  use tokio::sync::oneshot as toneshot;
   use std::sync::mpsc as smpsc;
   use std::{thread, time};
   use log;
+  use chrono::prelude::*;
 
   #[test]
   fn test_get_folder_allkeys() {
@@ -266,6 +268,7 @@ mod tests {
     let mut nodes_service: Vec<String> = Vec::new();     // service cache
     // todo: if the index change, send the new nodes services between coroutine
     let (sx, mut rx) = tmpsc::channel(1);
+    // let (mut sx, mut rx) = toneshot::channel();
     // let (sx, mut rx) = smpsc::channel();
     let kv = KVPair::new();
     let client = Client::new("consul_test", 8500);
@@ -273,33 +276,78 @@ mod tests {
     log::info!("index orgin ------- {}", index);
 
     tokio::task::spawn(async move {
-      for i in 0..90 {
+      for i in 0..10 {
         thread::sleep(time::Duration::from_secs(5));
+        /*
         let mut index_ck = kv.get_folder_index(&client, &folder);
         log::info!("index_ck ------- {}", index_ck);
         if !index_ck.eq(index.as_str()) {
           log::info!("=== get newest nodes service, send coroutine ===");
           let nodes_v = kv.get_folder_allkeys(&client, &folder);
-          log::info!("in spawn nodes_v --- {:?}", nodes_v);
           let nodes_v_cl = nodes_v.clone();
-          sx.send(nodes_v).await.unwrap();    // todo: just make the channel full!
-          sx.send(nodes_v_cl).await.unwrap();
+          log::info!("[send] === in spawn nodes_v_cl: {:?}", nodes_v_cl);
+          sx.send(nodes_v_cl).await.unwrap();    // todo: just make the channel full!
+          // sx.send(nodes_v_cl).await.unwrap();
           index = index_ck;
         } else {
           log::info!("=== nodes_service no change ===");
           // sx.send(vec![]).await.unwrap();
         }
+         */
+
+        log::info!("=== get newest nodes service, send coroutine ===");
+        let nodes_v = kv.get_folder_allkeys(&client, &folder);
+        let nodes_v_cl = nodes_v.clone();
+        log::info!("[send] === in spawn nodes_v_cl: {:?}", nodes_v_cl);
+        sx.send(nodes_v_cl).await.unwrap();    // todo: just make the channel full!
+
+        // &sx.send(nodes_v_cl).unwrap();
       }
     });
 
+    // /*
     while let Some(nodes_v) = rx.recv().await {
+      log::info!("=== [一次recv开始] ===");
+      log::info!("[recv 1] === recv nodes_v --- {:?}", nodes_v);
       nodes_service = nodes_v;
-      log::info!("reload nodes_service --- {:?}", nodes_service);
+      log::info!("[recv 2] === reload nodes_service --- {:?}", nodes_service);
+      log::info!("=== [一次recv结束] ===");
       // return nodes_v;
     }
+   // */
+
+    // todo: if channle is oneshot
+    // match rx.await {
+    //   Ok(v) => { println!("v --- {:?}", v); }
+    //   Err(e) => { println!("err ---- {}", e); }
+    // }
+
     // todo: will not run!!!
     log::info!("nodes_service now is --- {:?}", nodes_service)
     // return vec![];
+  }
+
+  #[tokio::test]
+  async fn test_tokio_channel() {
+    println!("====================================================================");
+    // loop send ----------------------------------------
+    let (sx, mut rx) = tmpsc::channel(1);
+
+    tokio::task::spawn(async move {
+      for i in 0..9 {
+        thread::sleep(std::time::Duration::from_secs(5));
+        println!("=== send by tokio spawn --- {}, {}", i, Local::now());
+        sx.send(i).await.unwrap();
+      }
+    });
+
+    while let Some(i) = rx.recv().await {
+      // println!("5 now time is {:?}", Local::now());
+      println!("=== recv from tokio spawn --- {}, {}", i, Local::now());
+    }
+
+    // sleep(Duration::from_secs(10));
+    // println!("6 now time is {:?}", Local::now());
   }
 
   #[tokio::test]
@@ -347,6 +395,7 @@ mod tests {
     log::info!("nodes_v ---------- {:?}", nodes_v);
   }
    */
+
 
   #[test]
   fn unmarshal_kv_pair() {
