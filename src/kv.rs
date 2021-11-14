@@ -54,7 +54,7 @@ impl KVPair {
   }
 
   pub fn get_folder_keys<S: Into<String>>(&self, c: &Client, key: S) -> Result<String,
-                String> {
+    String> {
     let url = format!("http://{}:{}/v1/kv/{}/?keys", c.host, c.port, key.into());
     let mut rsp = reqwest::get(&url).map_err(|e| e.to_string())?;
     let mut body = String::new();
@@ -79,7 +79,7 @@ impl KVPair {
     let url = format!("http://{}:{}/v1/kv/{}?acquire={}", c.host, c.port,
                       key.into(), session.into());
     let mut vx = v.into();
-    c.debug_print(format!("key set_with_session val: {:?}", vx).as_str(), );
+    c.debug_print(format!("key set_with_session val: {:?}", vx).as_str());
     // let vxx = vx.clone();
 
     let mut rsp = reqwest::Client::new()
@@ -90,7 +90,7 @@ impl KVPair {
       .map_err(|e| e.to_string())?;
     let mut body = String::new();
     rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
-    c.debug_print(format!("set_with_session debug: {:?}", body).as_str(), );
+    c.debug_print(format!("set_with_session debug: {:?}", body).as_str());
     return Ok(body.as_str().contains("true"));
     /*
     if !body.as_str().contains("true") {
@@ -276,9 +276,10 @@ mod tests {
     log::info!("index orgin ------- {}", index);
 
     tokio::task::spawn(async move {
+      // loop {
       for i in 0..10 {
         thread::sleep(time::Duration::from_secs(5));
-        /*
+        // /*
         let mut index_ck = kv.get_folder_index(&client, &folder);
         log::info!("index_ck ------- {}", index_ck);
         if !index_ck.eq(index.as_str()) {
@@ -293,13 +294,13 @@ mod tests {
           log::info!("=== nodes_service no change ===");
           // sx.send(vec![]).await.unwrap();
         }
-         */
+        // */
 
-        log::info!("=== get newest nodes service, send coroutine ===");
-        let nodes_v = kv.get_folder_allkeys(&client, &folder);
-        let nodes_v_cl = nodes_v.clone();
-        log::info!("[send] === in spawn nodes_v_cl: {:?}", nodes_v_cl);
-        sx.send(nodes_v_cl).await.unwrap();    // todo: just make the channel full!
+        // log::info!("=== get newest nodes service, send coroutine ===");
+        // let nodes_v = kv.get_folder_allkeys(&client, &folder);
+        // let nodes_v_cl = nodes_v.clone();
+        // log::info!("[send] === in spawn nodes_v_cl: {:?}", nodes_v_cl);
+        // sx.send(nodes_v_cl).await.unwrap();    // todo: just make the channel full!
 
         // &sx.send(nodes_v_cl).unwrap();
       }
@@ -314,7 +315,7 @@ mod tests {
       log::info!("=== [一次recv结束] ===");
       // return nodes_v;
     }
-   // */
+    // */
 
     // todo: if channle is oneshot
     // match rx.await {
