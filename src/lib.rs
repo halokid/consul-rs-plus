@@ -47,7 +47,9 @@ impl Client {
   }
 
   pub fn kv_get<S: Into<String>>(&self, key: S) -> String {
-    let res = self.kv.get(self, key);
+    let keyx = key.into();
+    let keyxx = keyx.clone();
+    let res = self.kv.get(self, keyx);
     match res {
       Ok(kvs) => {
         let kv = kvs.get(0).unwrap();
@@ -57,7 +59,9 @@ impl Client {
         val_de_str
       }
       Err(err) => {
-        err
+        log::error!("key {} not exists, err: {}", keyxx, err);
+        // err
+        "keyNoExists_or_valIsNull".to_string()
       }
     }
   }
@@ -179,15 +183,22 @@ mod tests {
 
   #[test]
   fn test_kv_get() {
-    let host = config::CONFIG["consul_addr"];
+    // let host = config::CONFIG["consul_addr"];
+    let host = "consul_test";
     let client = Client::new(host, 8500);
     let val = client.kv_get("my-key");
-    println!("val ----- {}", val);
+    if val.eq("keyNoExists_or_valIsNull") {
+      println!("key {} keyNoExists_or_valIsNull", "my-key");
+    } else {
+      println!("key {} exists", "my-key");
+      println!("val ----- {}", val);
+    }
   }
 
   #[test]
   fn test_session_set() {
-    let host = config::CONFIG["consul_addr"];
+    // let host = config::CONFIG["consul_addr"];
+    let host = "consul_test";
     let client = Client::new(host, 8500);
     let se = client.session_set("15s".to_string(), "my-session".to_string(), "node1".to_string(), "release".to_string(), "10m0s".to_string());
   }
