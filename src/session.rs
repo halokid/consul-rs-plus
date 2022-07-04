@@ -1,6 +1,7 @@
 use crate::{Client};
 use std::io::Read;
 use std::fmt::Error;
+use std::time::Duration;
 use crate::pkg::CustomError;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -15,6 +16,7 @@ pub struct Session {
   service_checks: Option<String>,
   create_index:   u32,
   modify_index:   u32,
+  timeout:        u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -35,7 +37,8 @@ impl Session {
       node_checks: vec![],
       service_checks: None,
       create_index: 0,
-      modify_index: 0
+      modify_index: 0,
+      timeout:      600,
     }
   }
 
@@ -43,7 +46,9 @@ impl Session {
     let url = format!("http://{}:{}/v1/session/create", c.host, c.port);
     let payload = serde_json::to_string(s).unwrap();
     c.debug_print(format!("set session payload ------ {}", payload).as_str(), );
-    let mut rsp = reqwest::Client::new()
+    // let mut rsp = reqwest::Client::new()
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout))
+      .build().unwrap()
       .put(&url)
       .body(payload)
       .send()
@@ -58,7 +63,11 @@ impl Session {
 
   pub fn renew(&self, c: &Client, sid: &str) -> Result<(), CustomError> {
     let url = format!("http://{}:{}/v1/session/renew/{}", c.host, c.port, sid);
-    let mut rsp = reqwest::Client::new()
+    // let client = reqwest::Client::builder()
+    // let mut rsp = reqwest::Client::new()
+    // let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(30))
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout))
+      .build().unwrap()
       .put(&url)
       .send()
       .map_err( |e| e.to_string() ).unwrap();
@@ -74,7 +83,9 @@ impl Session {
 
   pub fn delete(&self, c: &Client, sid: &str) -> String {
     let url = format!("http://{}:{}/v1/session/destroy/{}", c.host, c.port, sid);
-    let mut rsp = reqwest::Client::new()
+    // let mut rsp = reqwest::Client::new()
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout))
+      .build().unwrap()
       .put(&url)
       .send()
       .map_err( |e| e.to_string()).unwrap();
