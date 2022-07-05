@@ -82,8 +82,10 @@ impl KVPair {
 
   pub fn set_with_session<S: Into<String>>(&self, c: &Client, key: S, v: S, session: S)
                                            -> Result<bool, String> {
+    let keyx = key.into();
+    let keyxx = keyx.clone();
     let url = format!("http://{}:{}/v1/kv/{}?acquire={}", c.host, c.port,
-                      key.into(), session.into());
+                      keyx, session.into());
     let mut vx = v.into();
     c.debug_print(format!("key set_with_session val: {:?}", vx).as_str());
     // let vxx = vx.clone();
@@ -98,7 +100,7 @@ impl KVPair {
       .map_err(|e| e.to_string())?;
     let mut body = String::new();
     rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
-    c.debug_print(format!("{:?} set_with_session debug: {:?}", key.into(), body).as_str());
+    c.debug_print(format!("{:?} set_with_session debug: {:?}", keyxx, body).as_str());
     return Ok(body.as_str().contains("true"));
     /*
     if !body.as_str().contains("true") {
