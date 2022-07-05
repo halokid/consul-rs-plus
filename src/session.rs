@@ -4,6 +4,8 @@ use std::fmt::Error;
 use std::time::Duration;
 use crate::pkg::CustomError;
 
+const TIMEOUT: u64 = 600;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Session {
   pub id:       String,
@@ -16,7 +18,7 @@ pub struct Session {
   service_checks: Option<String>,
   create_index:   u32,
   modify_index:   u32,
-  timeout:        u64,
+  // timeout:        u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -38,7 +40,7 @@ impl Session {
       service_checks: None,
       create_index: 0,
       modify_index: 0,
-      timeout:      600,
+      // timeout:      600,
     }
   }
 
@@ -47,7 +49,7 @@ impl Session {
     let payload = serde_json::to_string(s).unwrap();
     c.debug_print(format!("set session payload ------ {}", payload).as_str(), );
     // let mut rsp = reqwest::Client::new()
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout))
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
       .build().unwrap()
       .put(&url)
       .body(payload)
@@ -66,7 +68,7 @@ impl Session {
     // let client = reqwest::Client::builder()
     // let mut rsp = reqwest::Client::new()
     // let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(30))
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout))
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
       .build().unwrap()
       .put(&url)
       .send()
@@ -84,7 +86,7 @@ impl Session {
   pub fn delete(&self, c: &Client, sid: &str) -> String {
     let url = format!("http://{}:{}/v1/session/destroy/{}", c.host, c.port, sid);
     // let mut rsp = reqwest::Client::new()
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout))
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
       .build().unwrap()
       .put(&url)
       .send()

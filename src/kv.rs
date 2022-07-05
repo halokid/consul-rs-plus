@@ -11,6 +11,8 @@ use std::thread::sleep;
 use tokio::time::Duration;
 use std::str;
 
+const TIMEOUT: u64 = 600;
+
 #[derive(Serialize, Deserialize)]
 #[derive(Debug, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
@@ -23,7 +25,7 @@ pub struct KVPair {
   pub Value: String,
   #[serde(default = "default_string")]
   pub Session: String,
-  timeout:        u64,
+  // timeout:        u64,
 }
 
 fn default_string() -> String {
@@ -40,7 +42,7 @@ impl KVPair {
       Flags: 0,
       Value: "".to_string(),
       Session: "".to_string(),
-      timeout:      600,
+      // timeout:      600,
     }
   }
 
@@ -48,7 +50,7 @@ impl KVPair {
   pub fn get<S: Into<String>>(&self, c: &Client, key: S) -> Result<Vec<KVPair>, String> {
     let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, key.into());
     // let mut rsp = reqwest::get(&url).map_err(|e| e.to_string())?;
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
     let mut body = String::new();
     rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
     // todo: success -> return Vec<KVPair>,  fail -> return error string
@@ -67,7 +69,7 @@ impl KVPair {
     String> {
     let url = format!("http://{}:{}/v1/kv/{}/?keys", c.host, c.port, key.into());
     // let mut rsp = reqwest::get(&url).map_err(|e| e.to_string())?;
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
     let mut body = String::new();
     rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
     Ok(body)
@@ -76,7 +78,7 @@ impl KVPair {
   pub fn set<S: Into<String>>(&self, c: &Client, key: S, v: S) -> Result<bool, String> {
     let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, key.into());
     // let mut rsp = reqwest::Client::new()
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout))
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
       .build().unwrap()
       .put(&url)
       .body(v.into())
@@ -98,7 +100,7 @@ impl KVPair {
     // let vxx = vx.clone();
 
     // let mut rsp = reqwest::Client::new()
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout))
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
       .build().unwrap()
       .put(&url)
       // .body(v.into())
@@ -141,7 +143,7 @@ impl KVPair {
   pub fn delete<S: Into<String>>(&self, c: &Client, key: S) -> Result<bool, String> {
     let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, key.into());
     // let mut rsp = reqwest::Client::new()
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout))
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
       .build().unwrap()
       .delete(&url)
       .send()
@@ -172,7 +174,7 @@ impl KVPair {
 
     let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, keyx_ref.to_string());
     // let mut rsp = reqwest::Client::new()
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout))
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
       .build().unwrap()
       .delete(&url)
       .send()
@@ -229,7 +231,7 @@ impl KVPair {
   fn get_folder_index<S: Into<String>>(&self, c: &Client, folder: S) -> String {
     let url = format!("http://{}:{}/v1/kv/{}/", c.host, c.port, folder.into());
     // let mut rspx = reqwest::get(&url).map_err(|e| e.to_string()).unwrap();
-    let mut rspx = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
+    let mut rspx = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
     let header = rspx.headers();
     let index = header.get("X-Consul-Index").unwrap();
     let index_s = index.to_str().unwrap().to_string();
@@ -241,7 +243,7 @@ impl KVPair {
   fn get_folder_allkeys<S: Into<String>>(&self, c: &Client, folder: S) -> Vec<String> {
     let url = format!("http://{}:{}/v1/kv/{}?keys", c.host, c.port, folder.into());
     // let mut rsp = reqwest::get(&url).map_err(|e| e.to_string()).unwrap();
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(self.timeout)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
+    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
 
     let mut body = String::new();
     rsp.read_to_string(&mut body).map_err(|e| e.to_string());
