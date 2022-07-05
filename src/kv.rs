@@ -53,6 +53,13 @@ impl KVPair {
     rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
     // todo: success -> return Vec<KVPair>,  fail -> return error string
     c.debug_print(format!("kv get body --- {}", body).as_str());
+    // fixme: why sometimes here can request the key, but next process will map_err???
+    // fixme: maybe the consul API response too slow more than 600 seconds???
+    // fixme: here is the log
+    /*
+    [DEBUG] --- "kv get body --- [{\"LockIndex\":1,\"Key\":\"xxxx/ServiceAccessHttp/http@8.8.8.8:7777\",\"Flags\":0,\"Value\":\"a2V5Tm9FeGlzdHNfb3JfdmFsSXNOdWxs\",\"Session\":\"6282a3d6-f89b-878b-716a-3585513b1ac0\",\"CreateIndex\":29181048,\"ModifyIndex\":29181197}]"
+[2022-07-05T11:16:19Z ERROR consul_rs_plus] key xxxx/serviceName/http@8.8.8.8:7777 not exists, err: missing field `Timeout` at line 1 column 220
+     */
     serde_json::from_str::<Vec<KVPair>>(&body).map_err(|e| e.to_string())
   }
 
