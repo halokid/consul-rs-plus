@@ -41,9 +41,10 @@ impl Client {
   }
 
   pub fn debug_print(&self, s: &str) {
-    if self.debug {
-      println!("[DEBUG] --- {:?}", s);
-    }
+    // if self.debug {
+    //   println!("[DEBUG] --- {:?}", s);
+    // }
+    println!("[DEBUG] --- {:?}", s);
   }
 
   pub fn kv_get<S: Into<String>>(&self, key: S) -> String {
