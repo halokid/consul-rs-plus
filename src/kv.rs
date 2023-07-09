@@ -230,7 +230,7 @@ impl KVPair {
 
   fn get_folder_index<S: Into<String>>(&self, c: &Client, folder: S) -> String {
     let url = format!("http://{}:{}/v1/kv/{}/", c.host, c.port, folder.into());
-    // let mut rspx = reqwest::get(&url).map_err(|e| e.to_string()).unwrap();
+    let mut rspx = reqwest::get(&url).map_err(|e| e.to_string()).unwrap();
     let mut rspx = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
     let header = rspx.headers();
     let index = header.get("X-Consul-Index").unwrap();

@@ -10,6 +10,7 @@ pub mod kv;
 mod config;
 pub mod session;
 pub mod pkg;
+pub mod service;
 
 use self::kv::*;
 use std::io::Read;
@@ -122,6 +123,10 @@ impl Client {
 
   pub fn session_delete(&self, sid: &str) -> String {
     self.session.delete(self, sid)
+  }
+
+  pub fn service_get(&self, name: String) -> Vec<String> {
+    vec![]
   }
 
 }
