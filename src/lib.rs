@@ -11,6 +11,7 @@ mod config;
 pub mod session;
 pub mod pkg;
 pub mod service;
+pub mod vo;
 
 use self::kv::*;
 use std::io::Read;
