@@ -45,56 +45,15 @@ impl Session {
   }
 
   pub fn set(&self, c: &Client, s: &Session) -> String {
-    let url = format!("http://{}:{}/v1/session/create", c.host, c.port);
-    let payload = serde_json::to_string(s).unwrap();
-    c.debug_print(format!("set session payload ------ {}", payload).as_str(), );
-    // let mut rsp = reqwest::Client::new()
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
-      .build().unwrap()
-      .put(&url)
-      .body(payload)
-      .send()
-      .map_err( |e| e.to_string() ).unwrap();
-    let mut body = String::new();
-    // rsp.read_to_string(&mut body).map_err( |e| e.to_string());
-    // c.debug_print(format!("session set: {:?}", body).as_str());
-    let session_set: SessionSet = rsp.json().unwrap();
-    c.debug_print(format!("session set: {:?}", session_set).as_str(), );
-    session_set.ID
+    "".to_string()
   }
 
   pub fn renew(&self, c: &Client, sid: &str) -> Result<(), CustomError> {
-    let url = format!("http://{}:{}/v1/session/renew/{}", c.host, c.port, sid);
-    // let client = reqwest::Client::builder()
-    // let mut rsp = reqwest::Client::new()
-    // let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(30))
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
-      .build().unwrap()
-      .put(&url)
-      .send()
-      .map_err( |e| e.to_string() ).unwrap();
-    let mut body = String::new();
-    rsp.read_to_string(&mut body).map_err( |e| e.to_string());
-    c.debug_print(format!("session renew: {:?}", body).as_str(), );
-    if rsp.status().is_success() {
-      Ok(())
-    } else {
-      Err(CustomError(format!("renew session err: {}", sid)))
-    }
+    Err(CustomError("".to_string()))
   }
 
   pub fn delete(&self, c: &Client, sid: &str) -> String {
-    let url = format!("http://{}:{}/v1/session/destroy/{}", c.host, c.port, sid);
-    // let mut rsp = reqwest::Client::new()
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
-      .build().unwrap()
-      .put(&url)
-      .send()
-      .map_err( |e| e.to_string()).unwrap();
-    let mut body = String::new();
-    rsp.read_to_string(&mut body).map_err( |e| e.to_string() );
-    c.debug_print(format!("session delete return ---- {}", body).as_str());
-    body
+    "".to_string()
   }
 }
 

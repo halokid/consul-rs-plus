@@ -48,140 +48,29 @@ impl KVPair {
 
   // todo: Into<String> get the ownship for varible?
   pub fn get<S: Into<String>>(&self, c: &Client, key: S) -> Result<Vec<KVPair>, String> {
-    let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, key.into());
-    // let mut rsp = reqwest::get(&url).map_err(|e| e.to_string())?;
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
-    let mut body = String::new();
-    rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
-    // todo: success -> return Vec<KVPair>,  fail -> return error string
-    c.debug_print(format!("kv get body --- {}", body).as_str());
-    // fixme: why sometimes here can request the key, but next process will map_err???
-    // fixme: maybe the consul API response too slow more than 600 seconds???
-    // fixme: here is the log
-    /*
-    [DEBUG] --- "kv get body --- [{\"LockIndex\":1,\"Key\":\"xxxx/ServiceAccessHttp/http@8.8.8.8:7777\",\"Flags\":0,\"Value\":\"a2V5Tm9FeGlzdHNfb3JfdmFsSXNOdWxs\",\"Session\":\"6282a3d6-f89b-878b-716a-3585513b1ac0\",\"CreateIndex\":29181048,\"ModifyIndex\":29181197}]"
-[2022-07-05T11:16:19Z ERROR consul_rs_plus] key xxxx/serviceName/http@8.8.8.8:7777 not exists, err: missing field `Timeout` at line 1 column 220
-     */
-    serde_json::from_str::<Vec<KVPair>>(&body).map_err(|e| e.to_string())
+    Err("".to_string())
   }
 
   pub fn get_folder_keys<S: Into<String>>(&self, c: &Client, key: S) -> Result<String,
     String> {
-    let url = format!("http://{}:{}/v1/kv/{}/?keys", c.host, c.port, key.into());
-    // let mut rsp = reqwest::get(&url).map_err(|e| e.to_string())?;
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
-    let mut body = String::new();
-    rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
-    Ok(body)
+    Err("".to_string())
   }
 
   pub fn set<S: Into<String>>(&self, c: &Client, key: S, v: S) -> Result<bool, String> {
-    let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, key.into());
-    // let mut rsp = reqwest::Client::new()
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
-      .build().unwrap()
-      .put(&url)
-      .body(v.into())
-      .send()
-      .map_err(|e| e.to_string())?;
-    let mut body = String::new();
-    rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
-    return Ok(body.as_str().contains("true"));
+    Err("".to_string())
   }
 
   pub fn set_with_session<S: Into<String>>(&self, c: &Client, key: S, v: S, session: S)
                                            -> Result<bool, String> {
-    let keyx = key.into();
-    let keyxx = keyx.clone();
-    let url = format!("http://{}:{}/v1/kv/{}?acquire={}", c.host, c.port,
-                      keyx, session.into());
-    let mut vx = v.into();
-    c.debug_print(format!("key set_with_session val: {:?}", vx).as_str());
-    // let vxx = vx.clone();
-
-    // let mut rsp = reqwest::Client::new()
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
-      .build().unwrap()
-      .put(&url)
-      // .body(v.into())
-      .body(vx)
-      .send()
-      .map_err(|e| e.to_string())?;
-    let mut body = String::new();
-    rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
-    c.debug_print(format!("{:?} set_with_session debug: {:?}", keyxx, body).as_str());
-    return Ok(body.as_str().contains("true"));
-    /*
-    if !body.as_str().contains("true") {
-      let mut loop_flag = true;
-      let mut loop_num = 0;
-      while loop_flag && loop_num < 10 {
-        c.debug_print("---loop_flag set_with_session---");
-        let mut rsp = reqwest::Client::new()
-          .put(&url)
-          // todo: loop will get varible own, so use ref
-          .body(vxx.as_str().to_string())
-          .send()
-          .map_err(|e| e.to_string())?;
-        let mut body = String::new();
-        rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
-        c.debug_print(format!("set_with_session loop debug: {:?}", body).as_str());
-        // thread::sleep(time::Duration::from_secs(1));
-        if body.as_str().contains("true") {
-          loop_flag = false;
-          return Ok(true);
-        }
-        loop_num += 1;
-        thread::sleep(time::Duration::from_secs(19))
-      }
-      return Ok(false);
-    }
-    Ok(true)
-     */
+    Err("".to_string())
   }
 
   pub fn delete<S: Into<String>>(&self, c: &Client, key: S) -> Result<bool, String> {
-    let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, key.into());
-    // let mut rsp = reqwest::Client::new()
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
-      .build().unwrap()
-      .delete(&url)
-      .send()
-      .map_err(|e| e.to_string())?;
-    let mut body = String::new();
-    rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
-    return Ok(body.as_str().contains("true"));
+    Err("".to_string())
   }
 
   pub fn delete_both_session<S: Into<String>>(&self, c: &Client, key: S) -> Result<bool, String> {
-    // get kv session
-    let keyx = key.into();
-    let keyx_ref = keyx.as_str();
-    let kv = self.get(c, keyx_ref.to_string());
-    match kv {
-      Err(err) => {
-        return Err(format!("can not get kv {} {}", keyx_ref.to_string(), err));
-      }
-      _ => {}
-    }
-    let kvx = kv.unwrap();
-    c.debug_print(format!("kvx ------ {:?}", kvx).as_str());
-    let kvx_unwp = kvx.get(0).unwrap();
-    let sid = &kvx_unwp.Session;
-    c.debug_print(format!("delete_both_session sid: {}", sid).as_str());
-    //del session
-    c.session_delete(sid);
-
-    let url = format!("http://{}:{}/v1/kv/{}", c.host, c.port, keyx_ref.to_string());
-    // let mut rsp = reqwest::Client::new()
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT))
-      .build().unwrap()
-      .delete(&url)
-      .send()
-      .map_err(|e| e.to_string())?;
-    let mut body = String::new();
-    rsp.read_to_string(&mut body).map_err(|e| e.to_string())?;
-    return Ok(body.as_str().contains("true"));
+    Err("".to_string())
   }
 
   pub fn get_value(&self) -> Result<Vec<u8>, base64::DecodeError> {
@@ -229,29 +118,13 @@ impl KVPair {
    */
 
   fn get_folder_index<S: Into<String>>(&self, c: &Client, folder: S) -> String {
-    let url = format!("http://{}:{}/v1/kv/{}/", c.host, c.port, folder.into());
-    let mut rspx = reqwest::get(&url).map_err(|e| e.to_string()).unwrap();
-    let mut rspx = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
-    let header = rspx.headers();
-    let index = header.get("X-Consul-Index").unwrap();
-    let index_s = index.to_str().unwrap().to_string();
-    index_s
+    "".to_string()
   }
 
   // if you use cakeRabbit micro-service frmework, it use folder for service nodes
   // you can get all the service nodes use this fn, the consul API: /v1/kv/folder?keys
   fn get_folder_allkeys<S: Into<String>>(&self, c: &Client, folder: S) -> Vec<String> {
-    let url = format!("http://{}:{}/v1/kv/{}?keys", c.host, c.port, folder.into());
-    // let mut rsp = reqwest::get(&url).map_err(|e| e.to_string()).unwrap();
-    let mut rsp = reqwest::Client::builder().timeout(Duration::from_secs(TIMEOUT)).build().unwrap().get(&url).send().map_err(|e| e.to_string()).unwrap();
-
-    let mut body = String::new();
-    rsp.read_to_string(&mut body).map_err(|e| e.to_string());
-    // todo: success -> return Vec<KVPair>,  fail -> return error string
-    c.debug_print(format!("get_folder_allkeys body --- {}", body).as_str());
-    let nodes_v: Vec<String> = serde_json::from_str(&body).unwrap();
-    // println!("nodes_v ---------- {:?}", nodes_v);
-    nodes_v
+    vec![]
   }
 }
 
