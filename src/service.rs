@@ -41,7 +41,7 @@ impl Service {
     let body = res.text().await;
     // println!("{:?}", body);
     // body.unwrap()
-    let nodes: Vec<String> = vec![];
+    let mut nodes: Vec<String> = vec![];
     let body_js: Value = serde_json::from_str(body.unwrap().as_str()).unwrap();
     log::info!("body_js -->>> {:?}", body_js);
     // let body_js_arr = body_js.as_array();
@@ -49,7 +49,9 @@ impl Service {
       None => { return vec![]; }
       Some(_) => {
         for service in body_js.as_array().unwrap() {
-          log::info!("ServiceID -->>> {:?}", service["ServiceID"])
+          log::info!("ServiceID -->>> {:?}, {}, {}", service["ServiceID"], service["ServiceID"],
+          service["ServiceID"].as_str().unwrap());
+          nodes.append(service["ServiceID"].as_str().unwrap())
         }
         vec![]
       }
