@@ -17,9 +17,13 @@ use self::kv::*;
 use std::io::Read;
 use crate::pkg::CustomError;
 use base64::{decode};
+use env_logger::Env;
 
 // todo: global use varible here
 // pub const PKGX: pkg::Pkg = pkg::Pkg::new(true);
+
+// env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+// env_logger::init();
 
 pub struct Client {
   pub debug: bool,
@@ -33,6 +37,9 @@ pub struct Client {
 
 impl Client {
   pub fn new<S: Into<String>>(host: S, port: u16) -> Client {
+    // env_logger::init();
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+
     Client {
       debug: false,
       host: host.into(),

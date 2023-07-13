@@ -1,15 +1,15 @@
 use std::error::Error;
+use serde_json::Value;
 use crate::Client;
 use crate::pkg::CustomError;
 
 pub struct Service {
-  name: String
+  name: String,
 }
 
 impl Service {
-
   pub fn new() -> Self {
-    Service{
+    Service {
       name: "".to_string()
     }
   }
@@ -24,29 +24,40 @@ impl Service {
   }
 
   /// return []String service_id
-  pub async fn _get_nodes(&self, c: &Client, service_name: &str) {
+  pub async fn _get_nodes(&self, c: &Client, service_name: &str) -> Vec<String> {
     let url = format!("http://{}:{}/v1/catalog/service/{}", c.host, c.port, service_name);
-    println!("Fetching {:?}...", url);
+    // println!("Fetching {:?}...", url);
+    log::info!("Fetching {:?}...", url);
 
     // reqwest::get() is a convenience function.
-    //
     // In most cases, you should create/build a reqwest::Client and reuse
     // it for all requests.
     let rsp = reqwest::get(url).await;
 
     let res = rsp.unwrap();
-    println!("Response: {:?} {}", res.version(), res.status());
-    println!("Headers: {:#?}\n", res.headers());
+    // println!("Response: {:?} {}", res.version(), res.status());
+    // println!("Headers: {:#?}\n", res.headers());
 
     let body = res.text().await;
-
-    println!("{:?}", body);
+    // println!("{:?}", body);
+    // body.unwrap()
+    let nodes: Vec<String> = vec![];
+    let body_js: Value = serde_json::from_str(body.unwrap().as_str()).unwrap();
+    log::info!("body_js -->>> {:?}", body_js);
+    // let body_js_arr = body_js.as_array();
+    match body_js.as_array() {
+      None => { return vec![]; }
+      Some(_) => {
+        for service in body_js.as_array().unwrap() {
+          log::info!("ServiceID -->>> {:?}", service["ServiceID"])
+        }
+        vec![]
+      }
+    }
   }
 
   /// return `service_id: staus` hashmap
-  pub fn _get_health() {
-
-  }
+  pub fn _get_health() {}
 }
 
 #[cfg(test)]
@@ -59,9 +70,7 @@ mod tests {
     let client = Client::new("consul_test", 8500);
     let s = Service::new();
     s._get_nodes(&client, "neon_broker");
-
   }
-
 }
 
 

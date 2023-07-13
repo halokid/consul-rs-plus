@@ -2,8 +2,11 @@
 use lazy_static::*;
 use std::collections::HashMap;
 use std::env;
+// use env_logger::Env;
 
 lazy_static! {
+  // env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+
   pub static ref CONFIG: HashMap<&'static str, &'static str> = {
     let mut config = HashMap::new();
 
