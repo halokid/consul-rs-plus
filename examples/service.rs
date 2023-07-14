@@ -8,8 +8,14 @@ async fn main() -> Result<(), reqwest::Error> {
   println!("-->>> service examples");
 
   let client = Client::new("localhost", 8500);
-  let s = Service::new();
-  let rsp = s._get_nodes(&client, "neon_broker").await;
+  let service_name = "neon_broker";
+  let s = Service::new(client, service_name);
+  let nodes = s._get_nodes(&client, service_name).await;
+  log::info!("nodes -->>> {:?}", nodes);
+
+  let nodes_health = s._get_health(&client, service_name).await;
+  log::info!("nodes_health -->>> {:?}", nodes_health);
+
   // let js = json!(rsp);
   // println!("ServiceID -->>> {:?}", js);
   // let v: Value = serde_json::from_str(rsp.as_str()).unwrap();
