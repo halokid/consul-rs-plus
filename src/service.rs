@@ -11,10 +11,10 @@ pub struct Service {
 }
 
 impl Service {
-  pub fn new<T>(c: Client, name: T) -> Self {
+  pub fn new<S: Into<String>>(c: Client, name: S) -> Self {
     Service {
       consul_client: c,
-      name: name,
+      name: name.into(),
     }
   }
 
@@ -30,8 +30,8 @@ impl Service {
   }
 
   /// return []String service_id
-  pub async fn _get_nodes(&self, c: &Client, service_name: &str) -> HashMap<String, String> {
-    let url = format!("http://{}:{}/v1/catalog/service/{}", c.host, c.port, service_name);
+  pub async fn _get_nodes(&self) -> HashMap<String, String> {
+    let url = format!("http://{}:{}/v1/catalog/service/{}", self.consul_client.host, self.consul_client.port, self.name);
     // println!("Fetching {:?}...", url);
     log::info!("Fetching {:?}...", url);
 
@@ -68,8 +68,8 @@ impl Service {
   }
 
   /// return `service_id: staus` hashmap
-  pub async fn _get_health(&self, c: &Client, service_name: &str) -> Vec<String> {
-    let url = format!("http://{}:{}/v1/health/checks/{}", c.host, c.port, service_name);
+  pub async fn _get_health(&self) -> Vec<String> {
+    let url = format!("http://{}:{}/v1/health/checks/{}", self.consul_client.host, self.consul_client.port, self.name);
     log::info!("Fetching {:?}...", url);
     let rsp = reqwest::get(url).await;
     let res = rsp.unwrap();
