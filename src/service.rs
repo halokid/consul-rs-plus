@@ -6,7 +6,7 @@ use crate::Client;
 use crate::pkg::CustomError;
 
 pub struct Service {
-  consul_client: Client,
+  // consul_client: Client,
   // name: String,
 }
 
@@ -19,20 +19,20 @@ impl Service {
     }
   }
    */
-  pub fn new(c: Client) -> Self {
+  pub fn new() -> Self {
     Service {
-      consul_client: c,
+      // consul_client: c,
     }
   }
 
   /// Get the health services, base on below API url
   /// http://localhost:8500/v1/catalog/service/neon_broker
   /// http://localhost:8500/v1/health/checks/neon_broker
-  pub async fn get<S: Into<String>>(&self, service_name: S)
+  pub async fn get<S: Into<String>>(&self, c: &Client, service_name: S)
     -> Result<Vec<String>, CustomError> {
     let service_name = service_name.into();
-    let nodes = self._get_nodes(service_name.as_str()).await;
-    let nodes_health = self._get_health(service_name.as_str()).await;
+    let nodes = self._get_nodes(c, service_name.as_str()).await;
+    let nodes_health = self._get_health(c, service_name.as_str()).await;
     let mut service_addrs = Vec::new();
     for health_key in nodes_health {
       let v = nodes.get(health_key.as_str()).unwrap().to_string();
@@ -43,8 +43,8 @@ impl Service {
   }
 
   /// return []String service_id
-  pub async fn _get_nodes(&self, service_name: &str) -> HashMap<String, String> {
-    let url = format!("http://{}:{}/v1/catalog/service/{}", self.consul_client.host, self.consul_client.port, service_name);
+  pub async fn _get_nodes(&self, c: &Client, service_name: &str) -> HashMap<String, String> {
+    let url = format!("http://{}:{}/v1/catalog/service/{}", c.host, c.port, service_name);
     // println!("Fetching {:?}...", url);
     log::info!("Fetching {:?}...", url);
 
@@ -81,8 +81,8 @@ impl Service {
   }
 
   /// return `service_id: staus` hashmap
-  pub async fn _get_health(&self, service_name: &str) -> Vec<String> {
-    let url = format!("http://{}:{}/v1/health/checks/{}", self.consul_client.host, self.consul_client.port, service_name);
+  pub async fn _get_health(&self, c: &Client, service_name: &str) -> Vec<String> {
+    let url = format!("http://{}:{}/v1/health/checks/{}", c.host, c.port, service_name);
     log::info!("Fetching {:?}...", url);
     let rsp = reqwest::get(url).await;
     let res = rsp.unwrap();

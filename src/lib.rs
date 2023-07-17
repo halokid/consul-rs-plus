@@ -14,6 +14,8 @@ pub mod service;
 pub mod vo;
 
 use self::kv::*;
+use self::session::*;
+use self::service::*;
 use std::io::Read;
 use crate::pkg::CustomError;
 use base64::{decode};
@@ -32,7 +34,8 @@ pub struct Client {
   port: u16,
 
   kv:   KVPair,
-  session: session::Session,
+  session: Session,
+  service: Service,
 }
 
 impl Client {
@@ -45,7 +48,8 @@ impl Client {
       host: host.into(),
       port: port,
       kv: KVPair::new(),
-      session: session::Session::new(),
+      session: Session::new(),
+      service: Service::new(),
     }
   }
 
@@ -133,8 +137,9 @@ impl Client {
     self.session.delete(self, sid)
   }
 
-  pub fn service_get(&self, name: String) -> Vec<String> {
-    vec![]
+  // TODO: the end-user interface fn need to represent the true format return
+  pub fn service_get(&self, service_name: String) -> Vec<String> {
+    let node_addrs = self.service.get(self, service_name);
   }
 
 }
@@ -147,6 +152,14 @@ mod tests {
   use crate::config;
   use crate::pkg::CustomError;
   use crate::kv::KVPair;
+
+  #[test]
+  fn test_service_get() {
+    let host = config::CONFIG["consul_addr"];
+    let client = Client::new(host, 8500);
+    let node_addrs = client.service_get("neon_rabbit".to_string());
+    println!("node_addrs ---------- {:?}", node_addrs);
+  }
 
   /*
   // #[test]
@@ -187,6 +200,7 @@ mod tests {
   }
    */
 
+  /*
   #[test]
   fn test_kv_delete_both_session() {
     let host = config::CONFIG["consul_addr"];
@@ -246,6 +260,7 @@ mod tests {
     let svcs = res.unwrap();
     println!("svcs ------------- {:?}", svcs);
   }
+   */
 
 }
 
