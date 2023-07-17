@@ -13,6 +13,7 @@ pub mod pkg;
 pub mod service;
 pub mod vo;
 
+use std::future::Future;
 use self::kv::*;
 use self::session::*;
 use self::service::*;
@@ -139,7 +140,19 @@ impl Client {
 
   // TODO: the end-user interface fn need to represent the true format return
   pub fn service_get(&self, service_name: String) -> Vec<String> {
-    let node_addrs = self.service.get(self, service_name);
+    let mut rt = tokio::runtime::Runtime::new().unwrap();
+    let node_addrs_future = self.service.get(self, service_name);
+    let node_addrs = rt.block_on(node_addrs_future);
+    match node_addrs {
+      Ok(_) => {
+        println!("-->>> service_get real nodes, {:?}", node_addrs);
+        node_addrs.unwrap()
+      }
+      Err(_) => {
+        println!("-->>> service_get no nodes");
+        vec![]
+      }
+    }
   }
 
 }
@@ -157,7 +170,7 @@ mod tests {
   fn test_service_get() {
     let host = config::CONFIG["consul_addr"];
     let client = Client::new(host, 8500);
-    let node_addrs = client.service_get("neon_rabbit".to_string());
+    let node_addrs = client.service_get("neon_broker".to_string());
     println!("node_addrs ---------- {:?}", node_addrs);
   }
 
