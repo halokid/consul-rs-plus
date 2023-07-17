@@ -6,32 +6,45 @@ use crate::Client;
 use crate::pkg::CustomError;
 
 pub struct Service {
-  consul_client:  Client,
-  name: String,
+  consul_client: Client,
+  // name: String,
 }
 
 impl Service {
+  /*
   pub fn new<S: Into<String>>(c: Client, name: S) -> Self {
     Service {
       consul_client: c,
       name: name.into(),
     }
   }
+   */
+  pub fn new(c: Client) -> Self {
+    Service {
+      consul_client: c,
+    }
+  }
 
   /// Get the health services, base on below API url
   /// http://localhost:8500/v1/catalog/service/neon_broker
   /// http://localhost:8500/v1/health/checks/neon_broker
-  pub fn get(&self, c: &Client, service_name: &str) -> Result<Vec<String>, CustomError> {
-    let url = format!("http://{}:{}/v1/health/checks/{}", c.host, c.port, service_name);
-
-    // let nodes = self._get_nodes()
-
-    Ok(vec![])
+  pub async fn get<S: Into<String>>(&self, service_name: S)
+    -> Result<Vec<String>, CustomError> {
+    let service_name = service_name.into();
+    let nodes = self._get_nodes(service_name.as_str()).await;
+    let nodes_health = self._get_health(service_name.as_str()).await;
+    let mut service_addrs = Vec::new();
+    for health_key in nodes_health {
+      let v = nodes.get(health_key.as_str()).unwrap().to_string();
+      service_addrs.push(v);
+    }
+    Ok(service_addrs)
+    // Ok(vec![])
   }
 
   /// return []String service_id
-  pub async fn _get_nodes(&self) -> HashMap<String, String> {
-    let url = format!("http://{}:{}/v1/catalog/service/{}", self.consul_client.host, self.consul_client.port, self.name);
+  pub async fn _get_nodes(&self, service_name: &str) -> HashMap<String, String> {
+    let url = format!("http://{}:{}/v1/catalog/service/{}", self.consul_client.host, self.consul_client.port, service_name);
     // println!("Fetching {:?}...", url);
     log::info!("Fetching {:?}...", url);
 
@@ -50,7 +63,7 @@ impl Service {
     log::info!("body_js -->>> {:?}", body_js);
     // let body_js_arr = body_js.as_array();
     match body_js.as_array() {
-      None => { }
+      None => {}
 
       Some(_) => {
         for service in body_js.as_array().unwrap() {
@@ -68,8 +81,8 @@ impl Service {
   }
 
   /// return `service_id: staus` hashmap
-  pub async fn _get_health(&self) -> Vec<String> {
-    let url = format!("http://{}:{}/v1/health/checks/{}", self.consul_client.host, self.consul_client.port, self.name);
+  pub async fn _get_health(&self, service_name: &str) -> Vec<String> {
+    let url = format!("http://{}:{}/v1/health/checks/{}", self.consul_client.host, self.consul_client.port, service_name);
     log::info!("Fetching {:?}...", url);
     let rsp = reqwest::get(url).await;
     let res = rsp.unwrap();
@@ -79,7 +92,7 @@ impl Service {
     let body_js: Value = serde_json::from_str(body.unwrap().as_str()).unwrap();
     log::info!("body_js -->>> {:?}", body_js);
     match body_js.as_array() {
-      None => { }
+      None => {}
 
       Some(body_js_arr) => {
         for service in body_js_arr {
@@ -90,12 +103,9 @@ impl Service {
           }
         }
       }
-
     }
     nodes_health
   }
-
-
 }
 
 #[cfg(test)]

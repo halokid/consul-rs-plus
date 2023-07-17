@@ -1,3 +1,4 @@
+use std::fs::ReadDir;
 use serde_json::{json, Value};
 use consul_rs_plus::Client;
 use consul_rs_plus::service::Service;
@@ -9,12 +10,13 @@ async fn main() -> Result<(), reqwest::Error> {
 
   let client = Client::new("localhost", 8500);
   let service_name = "neon_broker";
-  let s = Service::new(client, service_name);
+  // let s = Service::new(client, service_name);
+  let s = Service::new(client);
   // let s = Service::new(client, service_name.to_string());
-  let nodes = s._get_nodes().await;
+  let nodes = s._get_nodes(service_name).await;
   log::info!("nodes -->>> {:?}", nodes);
 
-  let nodes_health = s._get_health().await;
+  let nodes_health = s._get_health(service_name).await;
   log::info!("nodes_health -->>> {:?}", nodes_health);
 
 
@@ -27,6 +29,9 @@ async fn main() -> Result<(), reqwest::Error> {
   }
   log::info!("service_addrs -->>> {:?}", service_addrs);
 
+  // ============================================
+  let addrs = s.get(service_name).await;
+  log::info!("addr -->>> {:?}", addrs);
 
   // let js = json!(rsp);
   // println!("ServiceID -->>> {:?}", js);
