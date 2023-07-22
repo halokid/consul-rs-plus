@@ -42,7 +42,7 @@ pub struct Client {
 impl Client {
   pub fn new<S: Into<String>>(host: S, port: u16) -> Client {
     // env_logger::init();
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+    // env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     Client {
       debug: false,
@@ -138,6 +138,7 @@ impl Client {
     self.session.delete(self, sid)
   }
 
+  /*
   // TODO: the end-user interface fn need to represent the true format return
   pub fn service_get(&self, service_name: String) -> Vec<String> {
     let mut rt = tokio::runtime::Runtime::new().unwrap();
@@ -153,6 +154,15 @@ impl Client {
         vec![]
       }
     }
+  }
+   */
+
+  // TODO: the 'rt' create will occur error like below
+  // TODO: `Cannot start a runtime from within a runtime. This happens because a function (like `block_on`) attempted to block the current thread`
+  // TODO: when this fn run under another `tokio` async runtime controller
+  // TODO: so this fn below if for test this situation
+  pub fn service_get(&self, service_name: String) -> Vec<String> {
+    vec!["for testing".to_string()]
   }
 
 }
