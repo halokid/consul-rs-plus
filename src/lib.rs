@@ -161,8 +161,26 @@ impl Client {
   // TODO: `Cannot start a runtime from within a runtime. This happens because a function (like `block_on`) attempted to block the current thread`
   // TODO: when this fn run under another `tokio` async runtime controller
   // TODO: so this fn below if for test this situation
-  pub fn service_get(&self, service_name: String) -> Vec<String> {
-    vec!["for testing".to_string()]
+  // pub fn service_get(&self, service_name: String) -> Vec<String> {
+  //   vec!["for testing sync".to_string()]
+  // }
+
+  // pub async fn service_get(&self, service_name: String) -> Vec<String> {
+  //   vec!["for testing async".to_string()]
+  // }
+
+  pub async fn service_get(&self, service_name: String) -> Vec<String> {
+    let node_addrs = self.service.get(self, service_name).await;
+    match node_addrs {
+      Ok(_) => {
+        println!("-->>> service_get real nodes, {:?}", node_addrs);
+        node_addrs.unwrap()
+      }
+      Err(_) => {
+        println!("-->>> service_get no nodes");
+        vec![]
+      }
+    }
   }
 
 }
@@ -181,7 +199,7 @@ mod tests {
     let host = config::CONFIG["consul_addr"];
     let client = Client::new(host, 8500);
     let node_addrs = client.service_get("neon_broker".to_string());
-    println!("node_addrs ---------- {:?}", node_addrs);
+    // println!("node_addrs ---------- {:?}", node_addrs);
   }
 
   /*
