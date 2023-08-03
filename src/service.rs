@@ -60,14 +60,14 @@ impl Service {
     // body.unwrap()
     let mut nodes = HashMap::new();
     let body_js: Value = serde_json::from_str(body.unwrap().as_str()).unwrap();
-    log::info!("body_js -->>> {:?}", body_js);
+    // log::info!("body_js -->>> {:?}", body_js);
     // let body_js_arr = body_js.as_array();
     match body_js.as_array() {
       None => {}
 
       Some(_) => {
         for service in body_js.as_array().unwrap() {
-          log::info!("ServiceID -->>> {:?}, {}, {}", service["ServiceID"], service["ServiceID"],
+          log::debug!("ServiceID -->>> {:?}, {}, {}", service["ServiceID"], service["ServiceID"],
           service["ServiceID"].as_str().unwrap().to_string());
           let node_addr = format!("{}:{}",
                                   service["ServiceAddress"].as_str().unwrap().to_string(),
@@ -90,7 +90,7 @@ impl Service {
     // let mut node_health = HashMap::new();
     let mut nodes_health: Vec<String> = Vec::new();
     let body_js: Value = serde_json::from_str(body.unwrap().as_str()).unwrap();
-    log::info!("body_js -->>> {:?}", body_js);
+    // log::info!("body_js -->>> {:?}", body_js);
     match body_js.as_array() {
       None => {}
 
