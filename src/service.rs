@@ -97,7 +97,7 @@ impl Service {
       Some(body_js_arr) => {
         for service in body_js_arr {
           let status = service["Status"].as_str().unwrap();
-          log::info!("status -->>> {:?}", status);
+          log::debug!("{} status -->>> {:?}", service["ServiceID"], status);
           if status == "passing" {
             nodes_health.push(service["ServiceID"].as_str().unwrap().to_string());
           }
