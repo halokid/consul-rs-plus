@@ -276,7 +276,7 @@ mod tests {
           // sx.send(vec![]).await.unwrap();
         }
       }
-    }).await;   // todo: this is await will loop run the tokio::spawn, so cannot run next process
+    }).await.expect("TODO: panic message");   // todo: this is await will loop run the tokio::spawn, so cannot run next process
 
     // todo: will not run forever!!!!!
     let nodes_v = rx.recv().unwrap();

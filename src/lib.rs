@@ -12,6 +12,7 @@ pub mod session;
 pub mod pkg;
 pub mod service;
 pub mod vo;
+pub mod vo;
 
 use std::future::Future;
 use self::kv::*;
@@ -21,12 +22,6 @@ use std::io::Read;
 use crate::pkg::CustomError;
 use base64::{decode};
 use env_logger::Env;
-
-// todo: global use varible here
-// pub const PKGX: pkg::Pkg = pkg::Pkg::new(true);
-
-// env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
-// env_logger::init();
 
 pub struct Client {
   pub debug: bool,
@@ -41,8 +36,6 @@ pub struct Client {
 
 impl Client {
   pub fn new<S: Into<String>>(host: S, port: u16) -> Client {
-    // env_logger::init();
-    // env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     Client {
       debug: false,
@@ -137,37 +130,6 @@ impl Client {
   pub fn session_delete(&self, sid: &str) -> String {
     self.session.delete(self, sid)
   }
-
-  /*
-  // TODO: the end-user interface fn need to represent the true format return
-  pub fn service_get(&self, service_name: String) -> Vec<String> {
-    let mut rt = tokio::runtime::Runtime::new().unwrap();
-    let node_addrs_future = self.service.get(self, service_name);
-    let node_addrs = rt.block_on(node_addrs_future);
-    match node_addrs {
-      Ok(_) => {
-        println!("-->>> service_get real nodes, {:?}", node_addrs);
-        node_addrs.unwrap()
-      }
-      Err(_) => {
-        println!("-->>> service_get no nodes");
-        vec![]
-      }
-    }
-  }
-   */
-
-  // TODO: the 'rt' create will occur error like below
-  // TODO: `Cannot start a runtime from within a runtime. This happens because a function (like `block_on`) attempted to block the current thread`
-  // TODO: when this fn run under another `tokio` async runtime controller
-  // TODO: so this fn below if for test this situation
-  // pub fn service_get(&self, service_name: String) -> Vec<String> {
-  //   vec!["for testing sync".to_string()]
-  // }
-
-  // pub async fn service_get(&self, service_name: String) -> Vec<String> {
-  //   vec!["for testing async".to_string()]
-  // }
 
   pub async fn service_get(&self, service_name: String) -> Vec<String> {
     let node_addrs = self.service.get(self, service_name).await;

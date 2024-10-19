@@ -1,6 +1,6 @@
 [package]
 name = "consul-rs-plus"
-version = "0.1.7"
+version = "0.1.8"
 authors = ["halokid <r00txxyyzz@gmail.com>"]
 edition = "2018"
 description = "A plus consul client package for Rust, more functions for micro service."
@@ -21,6 +21,13 @@ log = "0.4"
 env_logger = "0.8.3"
 tokio = { version = "1", features = ["full"] }
 chrono = { version = "0.4", features = ["serde"] }
+tokio-test = "0.4.4"
+
+[build-dependencies]
+tonic-build = "0.8"
+
+[profile.dev]
+incremental = true
 
 [[example]]
 name = "service"

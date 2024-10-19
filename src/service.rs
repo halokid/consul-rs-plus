@@ -42,26 +42,16 @@ impl Service {
     // Ok(vec![])
   }
 
-  /// return []String service_id
   pub async fn _get_nodes(&self, c: &Client, service_name: &str) -> HashMap<String, String> {
     let url = format!("http://{}:{}/v1/catalog/service/{}", c.host, c.port, service_name);
-    // println!("Fetching {:?}...", url);
     log::info!("Fetching {:?}...", url);
 
-    // reqwest::get() is a convenience function.
-    // In most cases, you should create/build a reqwest::Client and reuse
-    // it for all requests.
     let rsp = reqwest::get(url).await;
     let res = rsp.unwrap();
-    // println!("Response: {:?} {}", res.version(), res.status());
-    // println!("Headers: {:#?}\n", res.headers());
     let body = res.text().await;
-    // println!("{:?}", body);
-    // body.unwrap()
     let mut nodes = HashMap::new();
     let body_js: Value = serde_json::from_str(body.unwrap().as_str()).unwrap();
-    // log::info!("body_js -->>> {:?}", body_js);
-    // let body_js_arr = body_js.as_array();
+
     match body_js.as_array() {
       None => {}
 
@@ -114,20 +104,17 @@ mod tests {
   use crate::service::Service;
 
   // #[test]
-  // fn test_get_nodes() {
-  //   let client = Client::new("consul_test", 8500);
-  //   let s = Service::new();
-  //   s._get_nodes(&client, "neon_broker");
-  // }
+  #[tokio::test]
+  async fn test_service_comm() {
+    let client = Client::new("consul_test", 8500);
+    let s = Service::new();
+    let nodes = s._get_nodes(&client, "neon_gw").await;
+    println!("nodes -->>> {:?}", nodes);
+
+    let healths = s._get_health(&client, "neon_gw").await;
+    println!("health -->>> {:?}", healths);
+  }
 }
-
-
-
-
-
-
-
-
 
 
 
