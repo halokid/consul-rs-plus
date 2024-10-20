@@ -12,7 +12,6 @@ pub mod session;
 pub mod pkg;
 pub mod service;
 pub mod vo;
-pub mod vo;
 
 use std::future::Future;
 use self::kv::*;
@@ -23,6 +22,7 @@ use crate::pkg::CustomError;
 use base64::{decode};
 use env_logger::Env;
 
+#[derive(Debug)]
 pub struct Client {
   pub debug: bool,
 

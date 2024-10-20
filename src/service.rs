@@ -5,6 +5,7 @@ use serde_json::Value;
 use crate::Client;
 use crate::pkg::CustomError;
 
+#[derive(Debug)]
 pub struct Service {
   // consul_client: Client,
   // name: String,
@@ -44,7 +45,7 @@ impl Service {
 
   pub async fn _get_nodes(&self, c: &Client, service_name: &str) -> HashMap<String, String> {
     let url = format!("http://{}:{}/v1/catalog/service/{}", c.host, c.port, service_name);
-    log::info!("Fetching {:?}...", url);
+    log::info!("_get_nodes url -->>> {:?}", url);
 
     let rsp = reqwest::get(url).await;
     let res = rsp.unwrap();
