@@ -29,18 +29,35 @@ impl Service {
   /// Get the health services, base on below API url
   /// http://localhost:8500/v1/catalog/service/neon_broker
   /// http://localhost:8500/v1/health/checks/neon_broker
-  pub async fn get<S: Into<String>>(&self, c: &Client, service_name: S)
+  pub async fn getnodes<S: Into<String>>(&self, c: &Client, service_name: S)
     -> Result<Vec<String>, CustomError> {
     let service_name = service_name.into();
     let nodes = self._get_nodes(c, service_name.as_str()).await;
     let nodes_health = self._get_health(c, service_name.as_str()).await;
     let mut service_addrs = Vec::new();
+
     for health_key in nodes_health {
       let v = nodes.get(health_key.as_str()).unwrap().to_string();
       service_addrs.push(v);
     }
     Ok(service_addrs)
     // Ok(vec![])
+  }
+
+  pub async fn get_allservices(&self, c: &Client) -> Result<Vec<String>, CustomError> {
+    let url = format!("http://{}:{}/v1/internal/ui/services", c.host, c.port);
+    let rsp = reqwest::get(url).await;
+    let res = rsp.unwrap();
+    let rsp_json: serde_json::Value = res.json().await.unwrap();
+    println!("get_allservices rsp -->>> {:?}", rsp_json);
+
+    let mut services = Vec::new();
+    for svc_item in rsp_json.as_array().unwrap() {
+      let svc_name = svc_item.get("Name").unwrap().as_str().unwrap();
+      services.push(svc_name.to_string());
+    }
+
+    Ok(services)
   }
 
   pub async fn _get_nodes(&self, c: &Client, service_name: &str) -> HashMap<String, String> {
@@ -114,6 +131,12 @@ mod tests {
 
     let healths = s._get_health(&client, "neon_gw").await;
     println!("health -->>> {:?}", healths);
+
+    let real_nodes = client.service_getnodes("neon_gw".to_string()).await;
+    println!("real_nodes -->>> {:?}", real_nodes);
+
+    let all_services = s.get_allservices(&client).await.unwrap();
+    println!("all_services -->>> {:?}", all_services);
   }
 }
 

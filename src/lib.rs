@@ -131,8 +131,8 @@ impl Client {
     self.session.delete(self, sid)
   }
 
-  pub async fn service_get(&self, service_name: String) -> Vec<String> {
-    let node_addrs = self.service.get(self, service_name).await;
+  pub async fn service_getnodes(&self, service_name: String) -> Vec<String> {
+    let node_addrs = self.service.getnodes(self, service_name).await;
     match node_addrs {
       Ok(_) => {
         println!("-->>> service_get real nodes, {:?}", node_addrs);
@@ -145,126 +145,25 @@ impl Client {
     }
   }
 
+  pub async fn service_getall(&self, services: String) -> Vec<String> {
+    todo!()
+  }
+
+
 }
 
 #[cfg(test)]
 mod tests {
   use crate::Client;
-  use base64::Config;
-  use tokio::sync::mpsc;
   use crate::config;
-  use crate::pkg::CustomError;
-  use crate::kv::KVPair;
 
-  #[test]
-  fn test_service_get() {
+  #[tokio::test]
+  async fn test_service_get() {
     let host = config::CONFIG["consul_addr"];
     let client = Client::new(host, 8500);
-    let node_addrs = client.service_get("neon_broker".to_string());
+    let node_addrs = client.service_getnodes("neon_broker".to_string()).await;
     // println!("node_addrs ---------- {:?}", node_addrs);
   }
-
-  /*
-  // #[test]
-  #[tokio::test]
-  async fn test_kv_folder_watch() {
-    env_logger::init();
-    for i in 0..3 {
-      log::info!("i --- {:?}", i);
-    }
-    log::info!("log输出");
-    let host = config::CONFIG["consul_addr"];
-    let client = Client::new(host, 8500);
-    let res = client.kv_folder_watch("foo").await;
-  }
-   */
-
-  /*
-  #[tokio::test]
-  async fn test_kv_folder_watch_getnodes() {
-    env_logger::init();
-    for i in 0..3 {
-      log::info!("i --- {:?}", i);
-    }
-    log::info!("log输出");
-    let host = config::CONFIG["consul_addr"];
-    let client = Client::new(host, 8500);
-    let mut res = false;
-    let (sx, mut rx) = mpsc::channel(1);
-
-    tokio::task::spawn({
-      let resx = client.kv_folder_watch("foo").await.unwrap();
-      sx.send(resx).await.unwrap();
-    });
-
-    while let Some(resx) = rx.recv().await {
-      log::info!("resx --- {:?}", resx);
-    }
-  }
-   */
-
-  /*
-  #[test]
-  fn test_kv_delete_both_session() {
-    let host = config::CONFIG["consul_addr"];
-    let client = Client::new(host, 8500);
-    let res = client.kv_delete_both_session("my-key");
-    println!("res ---------- {}", res.unwrap());
-  }
-
-  #[test]
-  fn test_kv_get() {
-    // let host = config::CONFIG["consul_addr"];
-    let host = "consul_test";
-    let client = Client::new(host, 8500);
-    let val = client.kv_get("my-key");
-    if val.eq("keyNoExists_or_valIsNull") {
-      println!("key {} keyNoExists_or_valIsNull", "my-key");
-    } else {
-      println!("key {} exists", "my-key");
-      println!("val ----- {}", val);
-    }
-  }
-
-  #[test]
-  fn test_session_set() {
-    // let host = config::CONFIG["consul_addr"];
-    let host = "consul_test";
-    let client = Client::new(host, 8500);
-    let se = client.session_set("15s".to_string(), "my-session".to_string(), "node1".to_string(), "release".to_string(), "10m0s".to_string());
-  }
-
-  #[test]
-  fn test_kv_set_with_session() {
-    let host = config::CONFIG["consul_addr"];
-    let client = Client::new(host, 8500);
-    let session = client.session_set("15s".to_string(), "my-session".to_string(), "node1".to_string(), "release".to_string(), "10m0s".to_string());
-
-    let res = client.kv_set_with_session("my-key", "my-val", session.as_str()).unwrap();
-    println!("res ------- {}", res);
-  }
-
-  #[test]
-  fn test_session_renew() {
-    let host = config::CONFIG["consul_addr"];
-    let client = Client::new(host, 8500);
-    let ok = client.session_renew("d5663534-82f9-429b-954c-ae63d59d3502");
-    match ok {
-      Ok(_) => { println!("---ok---");}
-      Err(_) => { println!("---err---");}
-    }
-  }
-
-  #[test]
-  fn test_kv_ge_folder() {
-    let host = config::CONFIG["consul_addr"];
-    let client = Client::new(host, 8500);
-    let res = client.kv_get_folder("pomid/Echo");
-    let svcs = res.unwrap();
-    println!("svcs ------------- {:?}", svcs);
-  }
-   */
-
 }
 
 
